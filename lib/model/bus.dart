@@ -15,10 +15,10 @@ class Bus {
 
   //factory Post.fromJson(Map<String, dynamic> json) {
   static List<Bus> fromJson(List<dynamic> jsons) {
-    Map<String, dynamic> json = jsons[0];
+    //Map<String, dynamic> json = jsons[0];
     List<Bus> listOfPost = new List();
 
-    for(json in jsons){
+    for(Map<String, dynamic> json in jsons){
 
       Bus post =  Bus(
         route_id : json['route_id'],

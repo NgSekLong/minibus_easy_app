@@ -3,9 +3,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:minibus_easy/bus_route_detail_page.dart';
 import 'package:minibus_easy/model/bus.dart';
+import 'package:minibus_easy/passenger_layout.dart';
 
-Future<List<Bus>> fetchPost() async {
+Future<List<Bus>> fetchBuses() async {
   final response =
   await http.post('http://34.92.224.245:80/list_bueses');
 
@@ -28,56 +30,64 @@ class BusRoutePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final post = fetchPost();
+    final post = fetchBuses();
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(
-        title: Row(children: <Widget>[
-          //Text('Route List'),
-          new Image.asset('assets/top_bar.jpeg', fit: BoxFit.cover),
-
-        ]),
-        backgroundColor: Color(0xFFecd98b),
-        actions: <Widget>[
-//          PopupMenuButton<String>(
-//
-//            icon: Icon(Icons.settings),
-//          )
-        ],
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // this will be set when a new tab is tapped
-        fixedColor: Colors.amber[900],
-
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_on),
-            title: Text('Map'),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.line_weight),
-            title: Text('Route List'),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark_border),
-            title: Text('Bookmark')
-          )
-        ],
-      ),
+      appBar: PassengerLayout().getAppBar(),
+      bottomNavigationBar: PassengerLayout().getBottomNavigationBar(),
       body: Center(
         child: FutureBuilder<List<Bus>>(
           future: post,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               List<Widget> listOfRow = new List();
+              int routeNumCounter = 0;
+              String previousRouteId = "";
 
               for(Bus bus in snapshot.data){
+                String route_id = bus.route_id;
+
+                if(route_id == previousRouteId){
+                  routeNumCounter++;
+                } else {
+                  routeNumCounter=0;
+                }
+                int currentRouteNumCount = routeNumCounter;
+                previousRouteId = route_id;
+
+                //print(route_id +":"+ routeNumCounter.toString());
+
                 // bus.route_id
-                String demoText = "route_id: ${bus.route_id}, Bus number: ${bus.route_number}, \nRegion: ${bus.region}, \n";
+                String demoText = "route_id: ${bus.route_id}, Region: ${bus.region}, \n";
                 demoText += "From '${bus.route_start_at_en}' to: '${bus.route_end_at_en}', \n'${bus.route_start_at_tc}' 到 '${bus.route_end_at_tc}'";
                 ListTile listTile = new ListTile(
-                  title: new Text(demoText),
+                  title:
+
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: Text(bus.route_number),
+                      ),
+                      Expanded(
+                        flex: 9,
+                        child: Text(demoText),
+                      ),
+                    ],
+                  ),
+//                  Row(children: <Widget>[
+//
+//                    Text(bus.route_number),
+//                    Text(demoText),
+//                  ],),
+
+                  onTap: (){
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => BusRouteDetailPage(route_id: route_id, route_num_counter: currentRouteNumCount)),
+                    );
+                  },
                 );
                 listOfRow.add(listTile);
               }
