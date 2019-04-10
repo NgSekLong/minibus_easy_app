@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:minibus_easy/bus_route_detail_page.dart';
+import 'package:minibus_easy/view/bus_route_detail_page.dart';
 import 'package:minibus_easy/model/bus.dart';
 import 'package:minibus_easy/passenger_layout.dart';
 
@@ -22,19 +22,105 @@ Future<List<Bus>> fetchBuses() async {
 }
 
 
+class BusRoutePage extends StatefulWidget {
+  @override
+  _BusRoutePageState createState() => new _BusRoutePageState();
+}
 
-class BusRoutePage extends StatelessWidget {
+
+class _BusRoutePageState extends State<BusRoutePage>  with SingleTickerProviderStateMixin {
 
   Future<List<Bus>> post;
   //BusRoutePage({Key key, this.post}) : super(key: key);
+
+
+
+  TabController controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the Tab Controller
+    controller = new TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the Tab Controller
+    controller.dispose();
+    super.dispose();
+  }
+
+//  TabBar getTabBar() {
+//    return new TabBar(
+//      tabs: <Tab>[
+//        new Tab(
+//          text: 'HK ISLAND',
+//        ),
+//        new Tab(
+//          text: 'KOWLOON',
+//        ),
+//        new Tab(
+//          text: 'NEW TERRITORIES',
+//        ),
+//      ],
+//      // setup the controller
+//      controller: controller,
+//    );
+//  }
+
+  Container getTabBar() {
+    return Container(
+      child: Material(
+        color: Color(0xFFe7e2dd),
+
+          child: new TabBar(
+            labelColor: Colors.black,
+            indicatorColor: Colors.black,
+            tabs: <Tab>[
+              new Tab(
+                text: 'HK ISLAND',
+
+              ),
+              new Tab(
+                text: 'KOWLOON',
+              ),
+              new Tab(
+                text: 'NEW TERRITORIES',
+              ),
+            ],
+            // setup the controller
+            controller: controller,
+          ),
+      )
+    );
+  }
+
+  TabBarView getTabBarView(var tabs) {
+    return new TabBarView(
+      // Add tabs as widgets
+      children: tabs,
+      // set the controller
+      controller: controller,
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final post = fetchBuses();
     // TODO: implement build
     return Scaffold(
-      appBar: PassengerLayout().getAppBar(),
-      bottomNavigationBar: PassengerLayout().getBottomNavigationBar(),
+      appBar: AppBar(
+        //leading: new Icon(Icons.android),
+        titleSpacing: 0.0,
+        //automaticallyImplyLeading: false, // Don't show the leading button
+        title: getTabBar(),
+        backgroundColor: Color(0xFFe7e2dd),
+        //bottom: getTabBar(),
+      ),
+      //bottomNavigationBar: PassengerLayout().getBottomNavigationBar(),
       body: Center(
         child: FutureBuilder<List<Bus>>(
           future: post,
