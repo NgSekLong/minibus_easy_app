@@ -7,198 +7,132 @@ import 'package:minibus_easy/view/bus_route_detail_page.dart';
 import 'package:minibus_easy/model/bus.dart';
 import 'package:minibus_easy/passenger_layout.dart';
 
-Future<List<Bus>> fetchBuses() async {
-  final response =
-  await http.post('http://34.92.224.245:80/list_bueses');
-
-  if (response.statusCode == 200) {
-    // If the call to the server was successful, parse the JSON
-    List<Bus> post = Bus.fromJson(json.decode(response.body));
-    return post;
-  } else {
-    // If that call was not successful, throw an error.
-    throw Exception('Failed to load post');
-  }
-}
-
 
 class BusRoutePage extends StatefulWidget {
+  final Future<List<Bus>> buses ;
+  final String region;
+
+  const BusRoutePage({Key key, this.buses, this.region}): super(key: key);
+
   @override
   _BusRoutePageState createState() => new _BusRoutePageState();
 }
 
-
-class _BusRoutePageState extends State<BusRoutePage>  with SingleTickerProviderStateMixin {
-
+class _BusRoutePageState extends State<BusRoutePage>
+    with SingleTickerProviderStateMixin {
   Future<List<Bus>> post;
-  //BusRoutePage({Key key, this.post}) : super(key: key);
 
 
-
-  TabController controller;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize the Tab Controller
-    controller = new TabController(length: 3, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    // Dispose of the Tab Controller
-    controller.dispose();
-    super.dispose();
-  }
-
-//  TabBar getTabBar() {
-//    return new TabBar(
-//      tabs: <Tab>[
-//        new Tab(
-//          text: 'HK ISLAND',
-//        ),
-//        new Tab(
-//          text: 'KOWLOON',
-//        ),
-//        new Tab(
-//          text: 'NEW TERRITORIES',
-//        ),
-//      ],
-//      // setup the controller
-//      controller: controller,
-//    );
-//  }
-
-  Container getTabBar() {
-    return Container(
-      child: Material(
-        color: Color(0xFFe7e2dd),
-
-          child: new TabBar(
-            labelColor: Colors.black,
-            indicatorColor: Colors.black,
-            tabs: <Tab>[
-              new Tab(
-                text: 'HK ISLAND',
-
-              ),
-              new Tab(
-                text: 'KOWLOON',
-              ),
-              new Tab(
-                text: 'NEW TERRITORIES',
-              ),
-            ],
-            // setup the controller
-            controller: controller,
-          ),
-      )
-    );
-  }
-
-  TabBarView getTabBarView(var tabs) {
-    return new TabBarView(
-      // Add tabs as widgets
-      children: tabs,
-      // set the controller
-      controller: controller,
-    );
   }
 
 
   @override
   Widget build(BuildContext context) {
-    final post = fetchBuses();
-    // TODO: implement build
-    return Scaffold(
-      appBar: AppBar(
-        //leading: new Icon(Icons.android),
-        titleSpacing: 0.0,
-        //automaticallyImplyLeading: false, // Don't show the leading button
-        title: getTabBar(),
-        backgroundColor: Color(0xFFe7e2dd),
-        //bottom: getTabBar(),
-      ),
-      //bottomNavigationBar: PassengerLayout().getBottomNavigationBar(),
-      body: Center(
-        child: FutureBuilder<List<Bus>>(
-          future: post,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              List<Widget> listOfRow = new List();
-              int routeNumCounter = 0;
-              String previousRouteId = "";
+    //final buses = fetchBuses();
+    final Future<List<Bus>> buses = widget.buses;
+    return Center(
+      child: FutureBuilder<List<Bus>>(
+        future: buses,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Widget> listOfRow = new List();
+            int routeNumCounter = 0;
+            String previousRouteId = "";
 
-              for(Bus bus in snapshot.data){
-                String route_id = bus.route_id;
+            for (Bus bus in snapshot.data) {
+              // continue if route didn't match bus
+              if (bus.region != widget.region){
+                continue;
+              }
 
-                if(route_id == previousRouteId){
-                  routeNumCounter++;
-                } else {
-                  routeNumCounter=0;
-                }
-                int currentRouteNumCount = routeNumCounter;
-                previousRouteId = route_id;
+              String route_id = bus.route_id;
 
-                //print(route_id +":"+ routeNumCounter.toString());
+              if (route_id == previousRouteId) {
+                routeNumCounter++;
+              } else {
+                routeNumCounter = 0;
+              }
+              int currentRouteNumCount = routeNumCounter;
+              previousRouteId = route_id;
 
-                // bus.route_id
-                String demoText = "route_id: ${bus.route_id}, Region: ${bus.region}, \n";
-                demoText += "From '${bus.route_start_at_en}' to: '${bus.route_end_at_en}', \n'${bus.route_start_at_tc}' 到 '${bus.route_end_at_tc}'";
-                ListTile listTile = new ListTile(
-                  title:
+              //print(route_id +":"+ routeNumCounter.toString());
 
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        flex: 1,
-                        child: Text(bus.route_number),
-                      ),
-                      Expanded(
-                        flex: 9,
-                        child: Text(demoText),
-                      ),
-                    ],
+              // bus.route_id
+              String demoText =
+                  "route_id: ${bus.route_id}, \n";
+              demoText +=
+                  "From '${bus.route_start_at_en}' \nTo: '${bus.route_end_at_en}', \n'${bus.route_start_at_tc}' 到 '${bus.route_end_at_tc}'";
+
+              final leftSection = new Container(
+                padding: EdgeInsets.only(right: 5),
+                child: CircleAvatar(
+                  child: Text(
+                    bus.route_number,
+                    style: TextStyle(color: Colors.black),
                   ),
+                  backgroundColor: Colors.greenAccent[100],
+                  radius: 24.0,
+                ),
+              );
+              final middleSection = new Container(
+                child: Text(demoText),
+              );
+              ListTile listTile = new ListTile(
+                title: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  //mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+//                      Expanded(
+//                        flex: 1,
+//                        child: Text(bus.route_number),
+//                      ),
+//                      Expanded(
+//                        flex: 9,
+//                        child: Text(demoText),
+//                      ),
+                    leftSection,
+                    middleSection
+                  ],
+                ),
 //                  Row(children: <Widget>[
 //
 //                    Text(bus.route_number),
 //                    Text(demoText),
 //                  ],),
 
-                  onTap: (){
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => BusRouteDetailPage(route_id: route_id, route_num_counter: currentRouteNumCount)),
-                    );
-                  },
-                );
-                listOfRow.add(listTile);
-              }
-
-              final List<Widget> divided = ListTile
-                  .divideTiles(
-                context: context,
-                tiles: listOfRow,
-                color: Colors.blue,
-              ).toList();
-
-              return ListView(children: divided);
-
-
-
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => BusRouteDetailPage(
+                            route_id: route_id,
+                            route_num_counter: currentRouteNumCount)),
+                  );
+                },
+              );
+              listOfRow.add(listTile);
             }
 
-            // By default, show a loading spinner
-            return CircularProgressIndicator();
-          },
-        ),
+            final List<Widget> divided = ListTile.divideTiles(
+              context: context,
+              tiles: listOfRow,
+              color: Colors.blue,
+            ).toList();
+
+            return ListView(children: divided);
+          } else if (snapshot.hasError) {
+            return Text("${snapshot.error}");
+          }
+
+          // By default, show a loading spinner
+          return CircularProgressIndicator();
+        },
       ),
     );
   }
-
 }

@@ -62,7 +62,7 @@ class BusRouteDetailPage extends StatelessWidget {
                   String totalDurationInString = new Duration(seconds: totalDuration).toString().split(".")[0];
                   //totalDurationInString = totalDurationInString.split(".")[0];
                   // bus.route_id
-                  String demoText = "Stop Name: ${stop_name_en} ( ${stop_name_tc} ) \n Estimated time to station from main station: ${totalDurationInString}";
+                  String demoText = "${stop_name_en} ( ${stop_name_tc} ) \n Estimated time to station from main station: ${totalDurationInString}";
 
                   ListTile listTile = new ListTile(
                     title: Row(children: <Widget>[

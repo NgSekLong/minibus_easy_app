@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minibus_easy/passenger_layout.dart';
 import 'package:minibus_easy/view/bookmark_page.dart';
+import 'package:minibus_easy/view/bus_route_navigation.dart';
 import 'package:minibus_easy/view/bus_route_page.dart';
 import 'package:minibus_easy/view/map_page.dart';
 import 'package:minibus_easy/view/numpad_page.dart';
@@ -10,6 +11,7 @@ void main() {
   runApp(new MaterialApp(
       // Title
       title: "Using Tabs",
+
       // Home
       home: new MainNavigation()));
 }
@@ -51,7 +53,7 @@ class MainNavigationState extends State<MainNavigation>
         children: <Widget>[
           NumpadPage(),
           MapPage(),
-          BusRoutePage(),
+          BusRouteNavigation(),
           BookmarkPage(),
           TestPage()
         ],
@@ -61,7 +63,7 @@ class MainNavigationState extends State<MainNavigation>
       // Set the bottom navigation bar
       bottomNavigationBar: Material(
         // set the color of the bottom navigation bar
-        color: Colors.blue,
+        color: Color(0xFFecd98b),
         // set the tab bar as the child of bottom navigation bar
         child: TabBar(
           tabs: <Tab>[
