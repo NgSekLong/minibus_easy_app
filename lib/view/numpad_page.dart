@@ -55,6 +55,7 @@ class _KeypadContainer extends StatefulWidget {
 class _KeypadContainerState extends State<_KeypadContainer> {
   GlobalKey<State<StatefulWidget>> _number1Key = GlobalKey();
   Map<String, GlobalKey> keys = Map();
+  Map<String, Number> numberElements = Map();
   List<String> listOfKeys = ['1','2','3','4','5','6','7','8','9','0','C','<'];
 
   addToKeyList(String numberElement, GlobalKey globalKey) {
@@ -83,6 +84,15 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
       //RenderBox renderBox;
       Offset localPosition = update.globalPosition;
+      String _debugText = "";
+      String _position = "update:\n" +
+          localPosition.dx.toString() +
+          "\n" +
+          localPosition.dy.toString() +
+          "\n";
+      print(_position);
+
+      _debugText += _position ;
       keys.forEach((key, value) {
           RenderBox renderBox = value.currentContext.findRenderObject();
 //          Size size = renderBox.size;
@@ -90,22 +100,13 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
           bool fingerInNumpad = _checkIfFingerInNumpad(localPosition, renderBox);
 
-          String _position = "update:\n" +
-              localPosition.dx.toString() +
-              "\n" +
-              localPosition.dy.toString() +
-              "\n";
-          print(_position);
 
-          String _debugText = _position ;
           widget.notifyParent(_debugText);
           if(fingerInNumpad){
             _debugText += '\n Clicked on ' + key;
-          } else {
-            _debugText += '\n Clicked on nothing' ;
           }
-          widget.notifyParent(_debugText);
       });
+      widget.notifyParent(_debugText);
 
 
 
@@ -138,10 +139,36 @@ class _KeypadContainerState extends State<_KeypadContainer> {
   }
 
   @override
+  void didChangeDependencies() {
+//    listOfKeys.forEach((numberElement) {
+//      GlobalKey newKey = new GlobalKey();
+//      keys.putIfAbsent(numberElement, ()=> newKey );
+//      Number newNumber = new Number(numberElement, newKey, addToKeyList);
+//      numberElements.putIfAbsent(numberElement, ()=> newNumber );
+//    });
+    String numberElement = '1';
+    GlobalKey newKey = new GlobalKey();
+    keys.putIfAbsent(numberElement, ()=> newKey );
+    // Number newNumber = new Number(numberElement, newKey, addToKeyList);
+    Number newNumber = new Number(key: newKey);
+    numberElements.putIfAbsent(numberElement, ()=> newNumber );
+
+     numberElement = '4';
+    GlobalKey newKey2 = new GlobalKey();
+    keys.putIfAbsent(numberElement, ()=> newKey2 );
+    //Number newNumber2 = new Number(numberElement, newKey2, addToKeyList);
+    Number newNumber2 = new Number(key: newKey2);
+    numberElements.putIfAbsent(numberElement, ()=> newNumber2 );
+
+
+    super.didChangeDependencies();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
     //keys
     //['2','3'].forEach((element) => keys.putIfAbsent(element, new GlobalKey()));
-    listOfKeys.forEach((numberElement) => keys.putIfAbsent(numberElement, ()=> GlobalKey() ));
     //keys.putIfAbsent('58', ()=> GlobalKey() );
 
     return GestureDetector(
@@ -159,10 +186,10 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                       height: double.infinity,
                       child: Column(
                         children: <Widget>[
-                          Number('1', keys['1'], addToKeyList),
-                          Number('4', keys['4'], addToKeyList),
-                          Number('7', keys['7'], addToKeyList),
-                          Number('Cancel', keys['c'], addToKeyList),
+                          numberElements['1'],// Number('1', keys['1'], addToKeyList),
+                          numberElements['4'], // Number('4', keys['4'], addToKeyList),
+                          //Number('7', keys['7'], addToKeyList),
+                          //Number('Cancel', keys['c'], addToKeyList),
                         ],
                       ))),
               Flexible(
@@ -171,10 +198,10 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                       height: double.infinity,
                       child: Column(
                         children: <Widget>[
-                          Number('2', keys['2'], addToKeyList),
-                          Number('5', keys['5'], addToKeyList),
-                          Number('8', keys['8'], addToKeyList),
-                          Number('0', keys['0'], addToKeyList),
+                          //Number('2', keys['2'], addToKeyList),
+                          //Number('5', keys['5'], addToKeyList),
+                          //Number('8', keys['8'], addToKeyList),
+                          //Number('0', keys['0'], addToKeyList),
                         ],
                       ))),
               Flexible(
@@ -183,10 +210,10 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                       height: double.infinity,
                       child: Column(
                         children: <Widget>[
-                          Number('3', keys['3'], addToKeyList),
-                          Number('6', keys['6'], addToKeyList),
-                          Number('9', keys['9'], addToKeyList),
-                          Number('<', keys['<'], addToKeyList),
+                          //Number('3', keys['3'], addToKeyList),
+                          //Number('6', keys['6'], addToKeyList),
+                          //Number('9', keys['9'], addToKeyList),
+                          //Number('<', keys['<'], addToKeyList),
                         ],
                       ))),
               Flexible(
@@ -281,16 +308,29 @@ class SpecialNumber extends StatelessWidget {
   }
 }
 
-class Number extends StatelessWidget {
 
 
-  final Function(String numberElement, GlobalKey globalKey) addToKeyList;
+class Number extends StatefulWidget {
+  Number({
+    Key key,
+    //this.color,
+  }): super(key: key);
 
-  Number(this.num, this.thiskey2, this.addToKeyList);
+  @override
+  _NumberState createState() => new _NumberState();
+}
 
-  final String num;
-  GlobalKey thiskey2 = new GlobalKey();
-  GlobalKey thiskey = new GlobalKey();
+
+class _NumberState extends State<Number> {
+
+
+  //final Function(String numberElement, GlobalKey globalKey) addToKeyList;
+
+  //_NumberState(this.num, this.thiskey2, this.addToKeyList);
+
+  final String num = '1';
+//  GlobalKey thiskey2 = new GlobalKey();
+//  GlobalKey thiskey = new GlobalKey();
 
   //LocalKey a;
 
@@ -298,10 +338,10 @@ class Number extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    addToKeyList(num, thiskey);
+    //addToKeyList(num, thiskey);
     return Flexible(
         child: Container(
-            key: thiskey2,
+            //: thiskey2,
             color: Colors.white,
             margin: EdgeInsets.all(8),
             child: SizedBox(
