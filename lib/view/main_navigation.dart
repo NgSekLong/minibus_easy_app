@@ -49,6 +49,7 @@ class MainNavigationState extends State<MainNavigation>
       appBar: PassengerLayout().getAppBar(),
       // Set the TabBar view as the body of the Scaffold
       body: TabBarView(
+        physics: NeverScrollableScrollPhysics(),
         // Add tabs as widgets
         children: <Widget>[
           NumpadPage(),
