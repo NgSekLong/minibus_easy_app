@@ -120,6 +120,20 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
   _onPanEnd(DragEndDetails details) {
     setState(() {
+
+
+      _landOn = _storedNumber[_storedNumber.length -1];
+      if(_confirmedNumber[_confirmedNumber.length-1] != _landOn){
+        _confirmedNumber.add(_landOn);
+      }
+
+      // Display last debug
+
+      String debugText = 'Confiemd Numbers : ' + _confirmedNumber.toString();
+
+      widget.notifyParent(debugText);
+
+
       // Calculate bus route end
 
       _storedIndex = 0;
@@ -149,16 +163,53 @@ class _KeypadContainerState extends State<_KeypadContainer> {
     return divideSon / divideMom;
   }
 
-  SlopeType _calculateSlopetype(Offset a, Offset b){
-    double slope = _calculateSlope(a, b);
-    if(slope > 2 || slope > -2){
-      return SlopeType.vertical;
-    } else if (slope < 0.5 && slope > -0.5 ){
-      return SlopeType.horizontal;
-    } else if (slope > 0){
-      return SlopeType.stepup;
+  int _calculateSlopetype(slope){
+    //double slope = _calculateSlope(a, b);
+    if (slope > 2) { return 0; }
+    else if (slope > 1) { return 1; }
+    else if (slope > 0.5) { return 2; }
+    else if (slope > 0) { return 3; }
+    else if (slope > -0.5) { return 4; }
+    else if (slope > -1) { return 5; }
+    else if (slope > -2) { return 6; }
+    return 7;
+//
+//    if(slope > 2 || slope > -2){
+//      return SlopeType.vertical;
+//    } else if (slope < 0.5 && slope > -0.5 ){
+//      return SlopeType.horizontal;
+//    } else if (slope > 0){
+//      return SlopeType.stepup;
+//    }
+//    return SlopeType.stepdown;
+  }
+  bool _calculateIfHaveTurn(int a, int b){
+    if(
+        (b - a).abs() <= 2 ||
+        (b+8 - a).abs() <= 2 ||
+        (b - (a+8)).abs() <= 2
+    ){
+      return false;
     }
-    return SlopeType.stepdown;
+    return true;
+
+  }
+  int _dirThreshold = 1;
+  bool _calculateIfDirectionChanged(Offset a, Offset b, Offset c){
+    double x1 = (c.dx - b.dx);
+    double x2 = (b.dx - a.dx);
+
+    double y1 = (c.dy - b.dy);
+    double y2 = (b.dy - a.dy);
+    if(x1.sign != x2.sign && x1.abs() > _dirThreshold && x2.abs() > _dirThreshold){
+      print('x over!');
+      return true;
+    }
+    else if(y1.sign != y2.sign && y1.abs() > _dirThreshold && y2.abs() > _dirThreshold){
+      print('y over!');
+      return true;
+    }
+    return false;
   }
 
   _onPanUpdate(DragUpdateDetails details) {
@@ -187,18 +238,31 @@ class _KeypadContainerState extends State<_KeypadContainer> {
       if(_storedIndex == 1){
         _confirmedNumber.add(hitOnKey);
       }
-      int firstRefPoint = _storedIndex-5;
-      int secondRefPoint = _storedIndex-10;
+      int slopeRefPoint1 = _storedIndex-5;
+      int slopeRefPoint2 = _storedIndex-10;
+
+      int directionRefPoint1 = _storedIndex-3;
+      int directionRefPoint2 = _storedIndex-6;
       if(_storedFingerLocation.length >= 10){
 
-        double currentSlope = _calculateSlope(localPosition, _storedFingerLocation[firstRefPoint]);
-        double previous = _calculateSlope(_storedFingerLocation[firstRefPoint], _storedFingerLocation[secondRefPoint]);
+        double currentSlope = _calculateSlope(localPosition, _storedFingerLocation[slopeRefPoint1]);
+        double previousSlope = _calculateSlope(_storedFingerLocation[slopeRefPoint1], _storedFingerLocation[slopeRefPoint2]);
 
-        double slopeChangeDetector = currentSlope / previous;
+        double slopeChangeDetector = currentSlope / previousSlope;
+        int currentSlopeType = _calculateSlopetype(currentSlope);
+        int previousSlopeType = _calculateSlopetype(previousSlope);
 
-        if(slopeChangeDetector < 0 && slopeChangeDetector > -100000){
+        // Rules for capture number
+        // 1. direction change
+        // 2. Slope change too much
+        // 3. Stop for long time
+        bool isCaptureNumber =
+          _calculateIfDirectionChanged(localPosition, _storedFingerLocation[directionRefPoint1], _storedFingerLocation[directionRefPoint2]) ||
+          _calculateIfHaveTurn(currentSlopeType, previousSlopeType);
+
+        if(isCaptureNumber) {
           _peaceful = false;
-          _landOn = _storedNumber[secondRefPoint];
+          _landOn = _storedNumber[slopeRefPoint2];
           if(_confirmedNumber.length <= 0 || _confirmedNumber[_confirmedNumber.length-1] != _landOn){
             _confirmedNumber.add(_landOn);
           }
@@ -207,8 +271,10 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
 
         debugText += '\n Current Slope' + currentSlope.toString();
-        debugText += '\n Previous Slope ' + previous.toString();
-        debugText += '\n Slope change detector: ' + slopeChangeDetector.toString();
+        debugText += '\n Previous Slope ' + previousSlope.toString();
+        //debugText += '\n Slope change detector: ' + slopeChangeDetector.toString();
+
+        debugText += '\n Slope type ' + currentSlopeType.toString() + ' | ' + previousSlopeType.toString();
         debugText += '\n Confiemd Numbers : ' + _confirmedNumber.toString();
 
       } else {
