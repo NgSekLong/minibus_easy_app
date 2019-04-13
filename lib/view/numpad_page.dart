@@ -140,25 +140,39 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
   @override
   void didChangeDependencies() {
-//    listOfKeys.forEach((numberElement) {
+    //listOfKeys = ['1','4','7'];
+    // In this list of keys, all of the number must be used in the chain
+    listOfKeys.forEach((numberElement) {
 //      GlobalKey newKey = new GlobalKey();
 //      keys.putIfAbsent(numberElement, ()=> newKey );
 //      Number newNumber = new Number(numberElement, newKey, addToKeyList);
 //      numberElements.putIfAbsent(numberElement, ()=> newNumber );
-//    });
-    String numberElement = '1';
-    GlobalKey newKey = new GlobalKey();
-    keys.putIfAbsent(numberElement, ()=> newKey );
-    // Number newNumber = new Number(numberElement, newKey, addToKeyList);
-    Number newNumber = new Number(key: newKey);
-    numberElements.putIfAbsent(numberElement, ()=> newNumber );
 
-     numberElement = '4';
-    GlobalKey newKey2 = new GlobalKey();
-    keys.putIfAbsent(numberElement, ()=> newKey2 );
-    //Number newNumber2 = new Number(numberElement, newKey2, addToKeyList);
-    Number newNumber2 = new Number(key: newKey2);
-    numberElements.putIfAbsent(numberElement, ()=> newNumber2 );
+
+
+      //String numberElement = '1';
+      GlobalKey newKey = new GlobalKey();
+      keys.putIfAbsent(numberElement, ()=> newKey );
+      // Number newNumber = new Number(numberElement, newKey, addToKeyList);
+      Number newNumber = new Number(key: newKey, text: numberElement);
+      numberElements.putIfAbsent(numberElement, ()=> newNumber );
+    });
+
+
+
+//    String numberElement = '1';
+//    GlobalKey newKey = new GlobalKey();
+//    keys.putIfAbsent(numberElement, ()=> newKey );
+//    // Number newNumber = new Number(numberElement, newKey, addToKeyList);
+//    Number newNumber = new Number(key: newKey);
+//    numberElements.putIfAbsent(numberElement, ()=> newNumber );
+//
+//     numberElement = '4';
+//     newKey = new GlobalKey();
+//    keys.putIfAbsent(numberElement, ()=> newKey );
+//    //Number newNumber2 = new Number(numberElement, newKey2, addToKeyList);
+//    Number newNumber2 = new Number(key: newKey);
+//    numberElements.putIfAbsent(numberElement, ()=> newNumber2 );
 
 
     super.didChangeDependencies();
@@ -188,8 +202,8 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                         children: <Widget>[
                           numberElements['1'],// Number('1', keys['1'], addToKeyList),
                           numberElements['4'], // Number('4', keys['4'], addToKeyList),
-                          //Number('7', keys['7'], addToKeyList),
-                          //Number('Cancel', keys['c'], addToKeyList),
+                          numberElements['7'],//Number('7', keys['7'], addToKeyList),
+                          numberElements['C'],//Number('Cancel', keys['c'], addToKeyList),
                         ],
                       ))),
               Flexible(
@@ -198,10 +212,10 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                       height: double.infinity,
                       child: Column(
                         children: <Widget>[
-                          //Number('2', keys['2'], addToKeyList),
-                          //Number('5', keys['5'], addToKeyList),
-                          //Number('8', keys['8'], addToKeyList),
-                          //Number('0', keys['0'], addToKeyList),
+                          numberElements['2'],//Number('2', keys['2'], addToKeyList),
+                          numberElements['5'],//Number('5', keys['5'], addToKeyList),
+                          numberElements['8'],//Number('8', keys['8'], addToKeyList),
+                          numberElements['0'],//Number('0', keys['0'], addToKeyList),
                         ],
                       ))),
               Flexible(
@@ -210,10 +224,10 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                       height: double.infinity,
                       child: Column(
                         children: <Widget>[
-                          //Number('3', keys['3'], addToKeyList),
-                          //Number('6', keys['6'], addToKeyList),
-                          //Number('9', keys['9'], addToKeyList),
-                          //Number('<', keys['<'], addToKeyList),
+                          numberElements['3'],//Number('3', keys['3'], addToKeyList),
+                          numberElements['6'],//Number('6', keys['6'], addToKeyList),
+                          numberElements['9'],//Number('9', keys['9'], addToKeyList),
+                          numberElements['<'],//Number('<', keys['<'], addToKeyList),
                         ],
                       ))),
               Flexible(
@@ -311,13 +325,15 @@ class SpecialNumber extends StatelessWidget {
 
 
 class Number extends StatefulWidget {
+  final String text;
   Number({
     Key key,
+    this.text,
     //this.color,
   }): super(key: key);
 
   @override
-  _NumberState createState() => new _NumberState();
+  _NumberState createState() => new _NumberState(text);
 }
 
 
@@ -326,9 +342,9 @@ class _NumberState extends State<Number> {
 
   //final Function(String numberElement, GlobalKey globalKey) addToKeyList;
 
-  //_NumberState(this.num, this.thiskey2, this.addToKeyList);
+  _NumberState(this.text);
 
-  final String num = '1';
+  final String text ;
 //  GlobalKey thiskey2 = new GlobalKey();
 //  GlobalKey thiskey = new GlobalKey();
 
@@ -351,7 +367,7 @@ class _NumberState extends State<Number> {
                 fit: BoxFit.contain,
                 child: Container(
                   padding: EdgeInsets.all(5),
-                  child: Text(num),
+                  child: Text(text),
                 ),
               ),
             )));
@@ -376,7 +392,7 @@ class _NumberState extends State<Number> {
 
           child: FittedBox(
             fit: BoxFit.cover,
-            child: Text(num),
+            //child: Text(num),
           ),
         ),
       ),
