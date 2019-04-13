@@ -1,7 +1,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:minibus_easy/view/bus_route_page.dart';
-import 'package:minibus_easy/view/gesture_demo_numpad_page.dart';
 import 'package:minibus_easy/view/main_navigation.dart';
 import 'package:minibus_easy/view/numpad_page.dart';
 
