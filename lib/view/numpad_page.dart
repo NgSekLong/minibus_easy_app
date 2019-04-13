@@ -28,7 +28,16 @@ class _NumpadPageState extends State<NumpadPage>
             flex: 3,
             child: Container(
               //color: Colors.green,
-              child: Text(_debugText),
+              child: Column(
+                children: <Widget>[
+                  Text(
+                    _debugText,
+                    style: new TextStyle(
+                      fontSize: 50.0,
+                    ),
+                  ),
+                ],
+              )
             ),
           ),
           Expanded(
@@ -47,7 +56,6 @@ enum SlopeType {
   stepup,
   stepdown,
 }
-
 
 class _KeypadContainer extends StatefulWidget {
   final Function(String a) notifyParent;
@@ -103,7 +111,8 @@ class _KeypadContainerState extends State<_KeypadContainer> {
     }
     return false;
   }
-  _checkOverlappedKeypad(localPosition){
+
+  _checkOverlappedKeypad(localPosition) {
     String hitOnKey = null;
     keys.forEach((key, value) {
       RenderBox renderBox = value.currentContext.findRenderObject();
@@ -120,19 +129,16 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
   _onPanEnd(DragEndDetails details) {
     setState(() {
-
-
-      _landOn = _storedNumber[_storedNumber.length -1];
-      if(_confirmedNumber[_confirmedNumber.length-1] != _landOn){
+      _landOn = _storedNumber[_storedNumber.length - 1];
+      if (_confirmedNumber[_confirmedNumber.length - 1] != _landOn) {
         _confirmedNumber.add(_landOn);
       }
 
       // Display last debug
 
-      String debugText = 'Confiemd Numbers : ' + _confirmedNumber.toString();
+      String debugText = _confirmedNumber.toString();
 
       widget.notifyParent(debugText);
-
 
       // Calculate bus route end
 
@@ -152,26 +158,36 @@ class _KeypadContainerState extends State<_KeypadContainer> {
   String _landOn = '';
   List<String> _confirmedNumber = [];
 
-
-
-  double _calculateSlope(Offset a, Offset b){
+  double _calculateSlope(Offset a, Offset b) {
     var divideSon = (b.dy - a.dy);
     var divideMom = (b.dx - a.dx);
 
-    if(divideMom == 0){divideMom = 0.01;}
-    if(divideSon == 0){divideSon = 0.01;}
+    if (divideMom == 0) {
+      divideMom = 0.01;
+    }
+    if (divideSon == 0) {
+      divideSon = 0.01;
+    }
     return divideSon / divideMom;
   }
 
-  int _calculateSlopetype(slope){
+  int _calculateSlopetype(slope) {
     //double slope = _calculateSlope(a, b);
-    if (slope > 2) { return 0; }
-    else if (slope > 1) { return 1; }
-    else if (slope > 0.5) { return 2; }
-    else if (slope > 0) { return 3; }
-    else if (slope > -0.5) { return 4; }
-    else if (slope > -1) { return 5; }
-    else if (slope > -2) { return 6; }
+    if (slope > 2) {
+      return 0;
+    } else if (slope > 1) {
+      return 1;
+    } else if (slope > 0.5) {
+      return 2;
+    } else if (slope > 0) {
+      return 3;
+    } else if (slope > -0.5) {
+      return 4;
+    } else if (slope > -1) {
+      return 5;
+    } else if (slope > -2) {
+      return 6;
+    }
     return 7;
 //
 //    if(slope > 2 || slope > -2){
@@ -183,29 +199,32 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 //    }
 //    return SlopeType.stepdown;
   }
-  bool _calculateIfHaveTurn(int a, int b){
-    if(
-        (b - a).abs() <= 2 ||
-        (b+8 - a).abs() <= 2 ||
-        (b - (a+8)).abs() <= 2
-    ){
+
+  bool _calculateIfHaveTurn(int a, int b) {
+    if ((b - a).abs() <= 2 ||
+        (b + 8 - a).abs() <= 2 ||
+        (b - (a + 8)).abs() <= 2) {
       return false;
     }
     return true;
-
   }
+
   int _dirThreshold = 1;
-  bool _calculateIfDirectionChanged(Offset a, Offset b, Offset c){
+
+  bool _calculateIfDirectionChanged(Offset a, Offset b, Offset c) {
     double x1 = (c.dx - b.dx);
     double x2 = (b.dx - a.dx);
 
     double y1 = (c.dy - b.dy);
     double y2 = (b.dy - a.dy);
-    if(x1.sign != x2.sign && x1.abs() > _dirThreshold && x2.abs() > _dirThreshold){
+    if (x1.sign != x2.sign &&
+        x1.abs() > _dirThreshold &&
+        x2.abs() > _dirThreshold) {
       print('x over!');
       return true;
-    }
-    else if(y1.sign != y2.sign && y1.abs() > _dirThreshold && y2.abs() > _dirThreshold){
+    } else if (y1.sign != y2.sign &&
+        y1.abs() > _dirThreshold &&
+        y2.abs() > _dirThreshold) {
       print('y over!');
       return true;
     }
@@ -218,35 +237,38 @@ class _KeypadContainerState extends State<_KeypadContainer> {
       Offset localPosition = details.globalPosition;
       String debugText = "";
       String _position = "\n Coordinate: " +
-          localPosition.dx.toString() + ", " + localPosition.dy.toString() ;
+          localPosition.dx.toString() +
+          ", " +
+          localPosition.dy.toString();
       print(_position);
 
       String hitOnKey = _checkOverlappedKeypad(localPosition);
 
-      if(hitOnKey != null){
+      if (hitOnKey != null) {
         debugText += '\n Clicked on ' + hitOnKey;
-
       }
 
       debugText += _position;
-      
+
       //////////// Recognizing point ////////////////////
       _storedIndex++;
       _storedFingerLocation.add(localPosition);
       _storedNumber.add(hitOnKey);
-      
-      if(_storedIndex == 1){
+
+      if (_storedIndex == 1) {
         _confirmedNumber.add(hitOnKey);
       }
-      int slopeRefPoint1 = _storedIndex-5;
-      int slopeRefPoint2 = _storedIndex-10;
+      int slopeRefPoint1 = _storedIndex - 5;
+      int slopeRefPoint2 = _storedIndex - 10;
 
-      int directionRefPoint1 = _storedIndex-3;
-      int directionRefPoint2 = _storedIndex-6;
-      if(_storedFingerLocation.length >= 10){
-
-        double currentSlope = _calculateSlope(localPosition, _storedFingerLocation[slopeRefPoint1]);
-        double previousSlope = _calculateSlope(_storedFingerLocation[slopeRefPoint1], _storedFingerLocation[slopeRefPoint2]);
+      int directionRefPoint1 = _storedIndex - 3;
+      int directionRefPoint2 = _storedIndex - 6;
+      if (_storedFingerLocation.length >= 10) {
+        double currentSlope = _calculateSlope(
+            localPosition, _storedFingerLocation[slopeRefPoint1]);
+        double previousSlope = _calculateSlope(
+            _storedFingerLocation[slopeRefPoint1],
+            _storedFingerLocation[slopeRefPoint2]);
 
         double slopeChangeDetector = currentSlope / previousSlope;
         int currentSlopeType = _calculateSlopetype(currentSlope);
@@ -256,33 +278,34 @@ class _KeypadContainerState extends State<_KeypadContainer> {
         // 1. direction change
         // 2. Slope change too much
         // 3. Stop for long time
-        bool isCaptureNumber =
-          _calculateIfDirectionChanged(localPosition, _storedFingerLocation[directionRefPoint1], _storedFingerLocation[directionRefPoint2]) ||
-          _calculateIfHaveTurn(currentSlopeType, previousSlopeType);
+        bool isCaptureNumber = _calculateIfDirectionChanged(
+                localPosition,
+                _storedFingerLocation[directionRefPoint1],
+                _storedFingerLocation[directionRefPoint2]) ||
+            _calculateIfHaveTurn(currentSlopeType, previousSlopeType);
 
-        if(isCaptureNumber) {
+        if (isCaptureNumber) {
           _peaceful = false;
           _landOn = _storedNumber[slopeRefPoint2];
-          if(_confirmedNumber.length <= 0 || _confirmedNumber[_confirmedNumber.length-1] != _landOn){
+          if (_confirmedNumber.length <= 0 ||
+              _confirmedNumber[_confirmedNumber.length - 1] != _landOn) {
             _confirmedNumber.add(_landOn);
           }
         }
         //peaceful = true;
 
-
         debugText += '\n Current Slope' + currentSlope.toString();
         debugText += '\n Previous Slope ' + previousSlope.toString();
         //debugText += '\n Slope change detector: ' + slopeChangeDetector.toString();
 
-        debugText += '\n Slope type ' + currentSlopeType.toString() + ' | ' + previousSlopeType.toString();
+        debugText += '\n Slope type ' +
+            currentSlopeType.toString() +
+            ' | ' +
+            previousSlopeType.toString();
         debugText += '\n Confiemd Numbers : ' + _confirmedNumber.toString();
-
       } else {
         debugText += '\n Getting data';
-
       }
-
-
 
 //      _storedFingerLocation;
 //
@@ -290,7 +313,7 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 //      if(_storedIndex > 0){
 //        peaceful = true;
 //      }
-      if(_peaceful){
+      if (_peaceful) {
         debugText += '\n Very peaceful';
       } else {
         debugText += '\n OMG what happened';
@@ -324,84 +347,99 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanUpdate: _onPanUpdate,
-      onPanEnd: _onPanEnd,
-      child: Stack(
-        children: <Widget>[
-          Container(
-            color: Colors.grey[200],
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
+    return Row(
+      children: <Widget>[
+//          Expanded(
+//            child: ,
+//          )
+        Expanded(
+          flex: 6,
+          child: GestureDetector(
+            onPanUpdate: _onPanUpdate,
+            onPanEnd: _onPanEnd,
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  color: Colors.grey[200],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
 
 //              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                Flexible(
-                    child: SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: Column(
-                          children: <Widget>[
-                            numberElements['1'],
-                            numberElements['4'],
-                            numberElements['7'],
-                            numberElements['C'],
-                          ],
-                        ))),
-                Flexible(
-                    child: SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: Column(
-                          children: <Widget>[
-                            numberElements['2'],
-                            numberElements['5'],
-                            numberElements['8'],
-                            numberElements['0'],
-                          ],
-                        ))),
-                Flexible(
-                    child: SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: Column(
-                          children: <Widget>[
-                            numberElements['3'],
-                            numberElements['6'],
-                            numberElements['9'],
-                            numberElements['<'],
-                          ],
-                        ))),
-                Flexible(
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Container(
-                      color: Colors.grey[400],
-                      child: ListView(
-                        children: <Widget>[
-                          SpecialNumber('A', null),
-                          SpecialNumber('B', null),
-                          SpecialNumber('C', null),
-                          SpecialNumber('D', null),
-                          SpecialNumber('E', null),
-                          SpecialNumber('F', null),
-                          SpecialNumber('G', null),
-                          SpecialNumber('H', null),
-                        ],
+                    children: <Widget>[
+                      Flexible(
+                          child: SizedBox(
+                              width: double.infinity,
+                              height: double.infinity,
+                              child: Column(
+                                children: <Widget>[
+                                  numberElements['1'],
+                                  numberElements['4'],
+                                  numberElements['7'],
+                                  numberElements['C'],
+                                ],
+                              ))),
+                      Flexible(
+                          child: SizedBox(
+                              width: double.infinity,
+                              height: double.infinity,
+                              child: Column(
+                                children: <Widget>[
+                                  numberElements['2'],
+                                  numberElements['5'],
+                                  numberElements['8'],
+                                  numberElements['0'],
+                                ],
+                              ))),
+                      Flexible(
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Column(
+                            children: <Widget>[
+                              numberElements['3'],
+                              numberElements['6'],
+                              numberElements['9'],
+                              numberElements['<'],
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
+                ),
+                new CustomPaint(
+                  painter: new Signature(points: _drawingPoints),
+                  size: Size.infinite,
                 ),
               ],
             ),
           ),
-          new CustomPaint(
-            painter: new Signature(points: _drawingPoints),
-            size: Size.infinite,
+        ),
+        Expanded(
+          child: Container(
+            child: SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: Container(
+                color: Colors.grey[400],
+                child: ListView(
+                  children: <Widget>[
+                    SpecialNumber('A', null),
+                    SpecialNumber('B', null),
+                    SpecialNumber('C', null),
+                    SpecialNumber('D', null),
+                    SpecialNumber('E', null),
+                    SpecialNumber('F', null),
+                    SpecialNumber('G', null),
+                    SpecialNumber('H', null),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ],
-      ),
+          flex: 2,
+        ),
+      ],
     );
   }
 }

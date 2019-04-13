@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:minibus_easy/view/setting_page.dart';
+import 'package:path/path.dart';
 
 class PassengerLayout {
 
 
-  getAppBar() {
+  getAppBar(context) {
     return AppBar(
       title: Row(children: <Widget>[
         //Text('Route List'),
@@ -15,7 +17,14 @@ class PassengerLayout {
       actions: <Widget>[
           PopupMenuButton<String>(
             icon: Icon(Icons.settings),
-            onSelected: _popupMenuOnSelect,
+            onSelected: (String choice) {
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SettingsPage()),
+              );
+            },
             itemBuilder: (BuildContext context) {
               return ['Settings', 'Rate Us'].map((String value) {
                 return PopupMenuItem<String> (
@@ -50,7 +59,15 @@ class PassengerLayout {
       ],
     );
   }
-  void _popupMenuOnSelect(String choice){
+  void _popupMenuOnSelect(String choice, BuildContext context){
+    if(choice == 'Settings'){
+
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => SettingsPage()),
+    );
     print('Working');
   }
 }

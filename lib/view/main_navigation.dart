@@ -46,7 +46,7 @@ class MainNavigationState extends State<MainNavigation>
   Widget build(BuildContext context) {
     return new Scaffold(
       // Appbar
-      appBar: PassengerLayout().getAppBar(),
+      appBar: PassengerLayout().getAppBar(context),
       // Set the TabBar view as the body of the Scaffold
       body: TabBarView(
         physics: NeverScrollableScrollPhysics(),

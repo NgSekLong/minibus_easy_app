@@ -40,7 +40,7 @@ class BusRouteDetailPage extends StatelessWidget {
     routeDetail = fetchRouteDetail(route_id, route_num_counter);
     // TODO: implement build
     return Scaffold(
-      appBar: PassengerLayout().getAppBar(),
+      appBar: PassengerLayout().getAppBar(context),
 
       body: Center(
         child: FutureBuilder <List<RouteDetail>>(
