@@ -1,0 +1,14 @@
+{
+  "page": {
+    "title": "My Page Title",
+    "changeLanguage": "Tap this button to select 'French'"
+  },
+  "pages": {
+    "settings": {
+      "title": "Settings",
+      "body": {
+        "language": "Language / 語言"
+      }
+    }
+  }
+}

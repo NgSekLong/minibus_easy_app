@@ -33,7 +33,7 @@ class _NumpadPageState extends State<NumpadPage>
                   Text(
                     _debugText,
                     style: new TextStyle(
-                      fontSize: 50.0,
+                      fontSize: 30.0,
                     ),
                   ),
                 ],
@@ -130,7 +130,7 @@ class _KeypadContainerState extends State<_KeypadContainer> {
   _onPanEnd(DragEndDetails details) {
     setState(() {
       _landOn = _storedNumber[_storedNumber.length - 1];
-      if (_confirmedNumber[_confirmedNumber.length - 1] != _landOn) {
+      if (_confirmedNumber[_confirmedNumber.length - 1] != _landOn && _landOn != null) {
         _confirmedNumber.add(_landOn);
       }
 
@@ -149,12 +149,10 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
       //Reset painting
       _drawingPoints = [];
-      _peaceful = true;
       _landOn = '';
     });
   }
 
-  bool _peaceful = true;
   String _landOn = '';
   List<String> _confirmedNumber = [];
 
@@ -220,12 +218,12 @@ class _KeypadContainerState extends State<_KeypadContainer> {
     if (x1.sign != x2.sign &&
         x1.abs() > _dirThreshold &&
         x2.abs() > _dirThreshold) {
-      print('x over!');
+      //print('x over!');
       return true;
     } else if (y1.sign != y2.sign &&
         y1.abs() > _dirThreshold &&
         y2.abs() > _dirThreshold) {
-      print('y over!');
+      //print('y over!');
       return true;
     }
     return false;
@@ -236,16 +234,16 @@ class _KeypadContainerState extends State<_KeypadContainer> {
       //////// Keypad /////////////////
       Offset localPosition = details.globalPosition;
       String debugText = "";
-      String _position = "\n Coordinate: " +
-          localPosition.dx.toString() +
+      String _position = "\nCoordinate: " +
+          localPosition.dx.toStringAsFixed(1) +
           ", " +
-          localPosition.dy.toString();
+          localPosition.dy.toStringAsFixed(1);
       print(_position);
 
       String hitOnKey = _checkOverlappedKeypad(localPosition);
 
       if (hitOnKey != null) {
-        debugText += '\n Clicked on ' + hitOnKey;
+        debugText += 'Click ' + hitOnKey;
       }
 
       debugText += _position;
@@ -284,27 +282,31 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                 _storedFingerLocation[directionRefPoint2]) ||
             _calculateIfHaveTurn(currentSlopeType, previousSlopeType);
 
+        // Add number only when
+        // 1. List is not empty
+        // 2. the number is not in the last index of the list
+        // 3. number is not null
         if (isCaptureNumber) {
-          _peaceful = false;
           _landOn = _storedNumber[slopeRefPoint2];
-          if (_confirmedNumber.length <= 0 ||
-              _confirmedNumber[_confirmedNumber.length - 1] != _landOn) {
+          if ((_confirmedNumber.length <= 0 ||
+              _confirmedNumber[_confirmedNumber.length - 1] != _landOn) &&
+              _landOn != null) {
             _confirmedNumber.add(_landOn);
           }
         }
         //peaceful = true;
 
-        debugText += '\n Current Slope' + currentSlope.toString();
-        debugText += '\n Previous Slope ' + previousSlope.toString();
+//        debugText += '\n Current Slope' + currentSlope.toString();
+//        debugText += '\n Previous Slope ' + previousSlope.toString();
         //debugText += '\n Slope change detector: ' + slopeChangeDetector.toString();
 
-        debugText += '\n Slope type ' +
+        debugText += '\nSlope type ' +
             currentSlopeType.toString() +
             ' | ' +
             previousSlopeType.toString();
-        debugText += '\n Confiemd Numbers : ' + _confirmedNumber.toString();
+        debugText += '\nNumbers : ' + _confirmedNumber.toString();
       } else {
-        debugText += '\n Getting data';
+        debugText += '\nGetting data';
       }
 
 //      _storedFingerLocation;
@@ -313,11 +315,6 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 //      if(_storedIndex > 0){
 //        peaceful = true;
 //      }
-      if (_peaceful) {
-        debugText += '\n Very peaceful';
-      } else {
-        debugText += '\n OMG what happened';
-      }
 
       //////////// Painter /////////////////
 
@@ -546,16 +543,39 @@ class Signature extends CustomPainter {
 
   Signature({this.points});
 
+  Rect rect = new Rect.fromCircle(
+    center: new Offset(100.0, 100.0),
+    radius: 180.0,
+  );
+  final Gradient gradient = new RadialGradient(
+    colors: <Color>[
+      Colors.yellow.withOpacity(0.3),
+      Colors.yellow.withOpacity(0.3),
+      Colors.green.withOpacity(0.3),
+      Colors.green.withOpacity(0.3),
+      Colors.blue.withOpacity(0.3),
+    ],
+    stops: [
+      0.0,
+      0.5,
+      0.7,
+      0.9,
+      1.0,
+    ],
+  );
+
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = new Paint()
-      ..color = Colors.yellowAccent[100].withOpacity(0.5)
+      //..color = Colors.yellowAccent[100].withOpacity(0.5)
+      ..shader = gradient.createShader(rect)
       ..strokeCap = StrokeCap.butt
       ..strokeWidth = 5;
 
     for (int i = 0; i < points.length - 1; i++) {
       if (points[i] != null && points[i + 1] != null) {
         canvas.drawLine(points[i], points[i + 1], paint);
+
       }
     }
   }
