@@ -44,14 +44,17 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   void initState() {
-    int index = langTextToId(locale.text("lang"));
-
-    _dropDownMenuItems = getDropDownMenuItems();
-    selectedLanguage = _dropDownMenuItems[index].value;
 
     //allTranslations.text("lang");
     super.initState();
+    int index = langTextToId(locale.currentLanguage);
+
+    _dropDownMenuItems = getDropDownMenuItems();
+
+    selectedLanguage = _dropDownMenuItems[index].value;
+
   }
+
 
   List<DropdownMenuItem<Language>> getDropDownMenuItems() {
     List<DropdownMenuItem<Language>> items = new List();

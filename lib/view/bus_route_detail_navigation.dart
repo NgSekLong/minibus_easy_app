@@ -62,10 +62,10 @@ class _BusRouteDetailNavigationState extends State<BusRouteDetailNavigation> wit
   Container getTabBar() {
     return Container(
         child: Material(
-          color: Color(0xFFe7e2dd),
+          color: Theme.of(context).bottomAppBarColor,
           child: new TabBar(
-            labelColor: Colors.black,
-            indicatorColor: Colors.black,
+//            labelColor: Colors.black,
+//            indicatorColor: Colors.black,
             tabs: <Tab>[
               new Tab(
                 text: 'ROUTE',
