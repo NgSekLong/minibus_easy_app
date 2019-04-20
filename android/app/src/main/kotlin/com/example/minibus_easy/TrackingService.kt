@@ -2,123 +2,259 @@ package com.example.minibus_easy
 
 import android.app.PendingIntent
 import android.app.Service
-import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
-import android.os.Handler
+import android.content.SharedPreferences
 import android.os.IBinder
+import android.preference.PreferenceManager
+import android.util.Log
+import android.widget.Toast
+
+import com.google.android.gms.location.ActivityRecognitionClient
+import com.google.android.gms.location.DetectedActivity
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.gms.tasks.Task
+
+import java.util.ArrayList
+import java.util.Calendar
+import java.util.Date
 import androidx.core.app.NotificationCompat
-import java.util.*
-import java.util.concurrent.ScheduledFuture
-import androidx.core.os.HandlerCompat.postDelayed
-import android.content.ContentValues.TAG
-//import com.google.android.gms.common.api.GoogleApiClient
+import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants
+import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants.NOTIFICATION_CHANNEL_ID
+import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants.TRACKING_SERVICE_TAG
+import com.example.minibus_easy.activityrecognition.DetectedActivitiesIntentService
+import com.example.minibus_easy.activityrecognition.DetectedActivitiesUtils
+
+class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeListener {
 
 
-import com.google.android.gms.location.ActivityRecognitionResult;
-import com.google.android.gms.location.DetectedActivity;
+//    companion object {
+//
+//
+//        protected val TAG = "TrackingService"
+//        protected val CHANNEL_ID = "minibusEasyChannel"
+//    }
+
+    private val mBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+
+    //    private NotificationManager mNotificationManager =
+    //            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    //Different Id's will show up as different notifications
+    //Some things we only have to set the first time.
+    private var notificationFirstTime = true
+    private val mNotificationId = 1
+
+    private lateinit var mContext: Context
 
 
+    /**
+     * The entry point for interacting with activity recognition.
+     */
+    private lateinit var mActivityRecognitionClient: ActivityRecognitionClient
 
 
-class TrackingService : Service() {
+// We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
+    // requestActivityUpdates() and removeActivityUpdates().
+    /**
+     * Gets a PendingIntent to be sent for each activity detection.
+     */
+//    private val activityDetectionPendingIntent: PendingIntent
+//        get() {
+//            val intent = Intent(this, DetectedActivitiesIntentService::class.java)
+//            return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+//        }
 
+    private fun getActivityDetectionPendingIntent(): PendingIntent {
+        val intent = Intent(this, DetectedActivitiesIntentService::class.java)
 
-    companion object {
-        const val CHANNEL_ID = "serviceChannel"
-        const val CHANNEL_NAME = "Minibus Easy Channel"
-        const val INTENT_EXTRA = "intentExtra"
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
+        // requestActivityUpdates() and removeActivityUpdates().
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
-    protected lateinit var timer: Handler
 
-
-//    private val mGoogleApiClient: GoogleApiClient? = null
-//    private val mPendingIntent: PendingIntent? = null
-//    private val mFenceReceiver: FenceReceiver? = null
-
-    // The intent action which will be fired when your fence is triggered.
-    private val FENCE_RECEIVER_ACTION = BuildConfig.APPLICATION_ID + "FENCE_RECEIVER_ACTION"
-
-
-    override fun onBind(intent: Intent?): IBinder? {
+    override fun onBind(intent: Intent): IBinder? {
         return null
     }
 
     override fun onCreate() {
         super.onCreate()
+        mContext = this
+
+        val detectedActivities = DetectedActivitiesUtils.detectedActivitiesFromJson(
+                PreferenceManager.getDefaultSharedPreferences(this).getString(
+                        DetectedActivitiesConstants.KEY_DETECTED_ACTIVITIES, ""))
+
+
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this)
+        mActivityRecognitionClient = ActivityRecognitionClient(this)
+        requestActivityUpdatesButtonHandler()
     }
 
     override fun onDestroy() {
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this)
         super.onDestroy()
-        timer.removeCallbacksAndMessages(null)
+    }
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+
+        return Service.START_NOT_STICKY
+    }
+
+    fun createNotification(chosenString: String, activitiesString: String) {
+
+        val currentTime = Calendar.getInstance().time
+        val timeString = currentTime.hours.toString() + ":" + currentTime.minutes + ":" + currentTime.seconds
+
+        // String input = intent.getStringExtra("inputExtra");
+        if (notificationFirstTime) {
+            val notificationIntent = Intent(this, MainActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(this,
+                    0, notificationIntent, 0)
+            mBuilder
+                    .setContentTitle("Tracking on: $timeString")
+                    .setContentText(chosenString)
+                    .setSmallIcon(R.drawable.notification_icon_background)
+                    .setContentIntent(pendingIntent).build()
+            notificationFirstTime = false
+        }
+        mBuilder
+                .setStyle(NotificationCompat.BigTextStyle()
+                        .bigText(activitiesString))
+        //        Intent notificationIntent = new Intent(this, MainActivity.class);
+        //        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+        //                0, notificationIntent, 0);
+        //
+        //        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        //                .setContentTitle("Tracking on: " + timeString)
+        //                .setContentText(chosenString)
+        //                .setSmallIcon(R.drawable.ic_launcher)
+        //
+        //                .setStyle(new NotificationCompat.BigTextStyle()
+        //                        .bigText(activitiesString))
+        //
+        //                .setContentIntent(pendingIntent).build();
+
+        startForeground(mNotificationId, mBuilder.build())
 
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val input = intent?.getStringExtra(INTENT_EXTRA)
 
-//        val notificationIntent = Intent(this, MainActivity::class.java)
-//        val pendingIntent = PendingIntent.getActivity(this, 0,
-//                notificationIntent, 0)
-//
-//        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-//                .setContentTitle("Minibus Service")
-//                .setContentText(input)
-//                .setSmallIcon(R.drawable.notification_icon_background)
-//                .setContentIntent(pendingIntent)
-//                .build()
-//
-//        startForeground(1, notification)
-        timer = Handler()
-        var i = 0
-//        timer.postDelayed({
-//            i++
-//            trackGPSAndAccerometer(i)
-//            //doSomethingHere()
-//        }, 1000)
+    /**
+     * Registers for activity recognition updates using
+     * [ActivityRecognitionClient.requestActivityUpdates].
+     * Registers success and failure callbacks.
+     */
+    fun requestActivityUpdatesButtonHandler() {
+        val task = mActivityRecognitionClient.requestActivityUpdates(
+                DetectedActivitiesConstants.DETECTION_INTERVAL_IN_MILLISECONDS,
+                getActivityDetectionPendingIntent())
+
+        task.addOnSuccessListener {
+            Toast.makeText(mContext,
+                    getString(R.string.activity_updates_enabled),
+                    Toast.LENGTH_SHORT)
+                    .show()
+            setUpdatesRequestedState(true)
+            updateDetectedActivitiesList()
+        }
+
+        task.addOnFailureListener {
+            Log.w(TRACKING_SERVICE_TAG, getString(R.string.activity_updates_not_enabled))
+            Toast.makeText(mContext,
+                    getString(R.string.activity_updates_not_enabled),
+                    Toast.LENGTH_SHORT)
+                    .show()
+            setUpdatesRequestedState(false)
+        }
+    }
+
+    /**
+     * Sets the boolean in SharedPreferences that tracks whether we are requesting activity
+     * updates.
+     */
+    private fun setUpdatesRequestedState(requesting: Boolean) {
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .edit()
+                .putBoolean(DetectedActivitiesConstants.KEY_ACTIVITY_UPDATES_REQUESTED, requesting)
+                .apply()
+    }
+
+    /**
+     * Processes the list of freshly detected activities. Asks the adapter to update its list of
+     * DetectedActivities with new `DetectedActivity` objects reflecting the latest detected
+     * activities.
+     */
+    protected fun updateDetectedActivitiesList() {
+        val detectedActivities = DetectedActivitiesUtils.detectedActivitiesFromJson(
+                PreferenceManager.getDefaultSharedPreferences(mContext)
+                        .getString(DetectedActivitiesConstants.KEY_DETECTED_ACTIVITIES, ""))
+
+        //mAdapter.updateActivities(detectedActivities);
+
+        updateActivities(detectedActivities)
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, s: String) {
+        if (s == DetectedActivitiesConstants.KEY_DETECTED_ACTIVITIES) {
+            updateDetectedActivitiesList()
+        }
+    }
 
 
-        val runnable = object : Runnable {
-            override fun run() {
-                i++
-                trackGPSAndAccerometer(i)
-                timer.postDelayed(this, 5000)
+    internal fun updateActivities(detectedActivities: ArrayList<DetectedActivity>) {
+        // Find the most sensitive activity:
+
+        var chosenActivity: DetectedActivity? = null
+
+        for (i in detectedActivities.indices) {
+            val detectedActivity = detectedActivities[i]
+            if (chosenActivity == null) {
+                chosenActivity = detectedActivity
+            } else if (detectedActivity.confidence > chosenActivity.confidence) {
+                chosenActivity = detectedActivity
             }
         }
-        // TODO: Implement ways to kill this runnable
-        runnable.run()
+        if(chosenActivity == null){
+            return
+        }
+        chosenActivity = chosenActivity!!
 
-//        timer = Timer().scheduleAtFixedRate(object : TimerTask() {
-//            override fun run() {
-//                i++
-//                trackGPSAndAccerometer(i)
-//            }
-//        }, 0, 5000)
+        //HashMap<Integer, Integer> detectedActivitiesMap = new HashMap<>();
+        //        for (DetectedActivity activity : detectedActivities) {
+        //            detectedActivitiesMap.put(activity.getType(), activity.getConfidence());
+        //        }
+        //        // Every time we detect new activities, we want to reset the confidence level of ALL
+        //        // activities that we monitor. Since we cannot directly change the confidence
+        //        // of a DetectedActivity, we use a temporary list of DetectedActivity objects. If an
+        //        // activity was freshly detected, we use its confidence level. Otherwise, we set the
+        //        // confidence level to zero.
+        //        ArrayList<DetectedActivity> tempList = new ArrayList<>();
+        //        for (int i = 0; i < DetectedActivitiesConstants.MONITORED_ACTIVITIES.length; i++) {
+        //            int confidence = detectedActivitiesMap.containsKey(DetectedActivitiesConstants.MONITORED_ACTIVITIES[i]) ?
+        //                    detectedActivitiesMap.get(DetectedActivitiesConstants.MONITORED_ACTIVITIES[i]) : 0;
+        //
+        //            tempList.add(new DetectedActivity(DetectedActivitiesConstants.MONITORED_ACTIVITIES[i],
+        //                    confidence));
+        //        }
+        //
+        //        // Remove all items.
+        //        this.clear();
+        //
+        //        // Adding the new list items notifies attached observers that the underlying data has
+        //        // changed and views reflecting the data should refresh.
+        //        for (DetectedActivity detectedActivity: tempList) {
+        //            this.add(detectedActivity);
+        //        }
+        val chosenString = DetectedActivitiesUtils.getActivityDescription(mContext, chosenActivity)
+        val activitiesString = DetectedActivitiesUtils.getAllActivitiesDescription(mContext, detectedActivities)
+
+        createNotification(chosenString, activitiesString)
 
 
-        return START_NOT_STICKY
     }
 
-    fun trackGPSAndAccerometer( i : Int){
 
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0,
-                notificationIntent, 0)
-
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Minibus Service")
-                .setContentText("Counter: " + i.toString())
-                .setSmallIcon(R.drawable.notification_icon_background)
-                .setContentIntent(pendingIntent)
-                .build()
-
-        startForeground(1, notification)
-
-    }
-
-//    override fun startService(service: Intent?): ComponentName? {
-//        val serviceIntent = Intent(this, TrackingService::class.java) as Intent
-//        serviceIntent.putExtra(INTENT_EXTRA, "Something")
-//
-//        return super.startService(serviceIntent)
-//    }
 }
