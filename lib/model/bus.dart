@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 class Bus {
 
 
@@ -20,7 +22,7 @@ class Bus {
 
     for(Map<String, dynamic> json in jsons){
 
-      Bus post =  Bus(
+      Bus bus =  Bus(
         route_id : json['route_id'],
         route_number : json['route_number'],
         region : json['region'],
@@ -29,11 +31,29 @@ class Bus {
         route_end_at_en : json['route_end_at_en'],
         route_end_at_tc : json['route_end_at_tc'],
       );
-      listOfPost.add(post);
+      listOfPost.add(bus);
     }
 
 
 
     return listOfPost;
+  }
+
+  static String toJson(List<Bus> listBuses){
+    List<Map<String, String>> listJson = [];
+    for(Bus bus in listBuses){
+       Map<String, String> json = {
+        "route_id" : bus.route_id,
+        "route_number" : bus.route_number,
+        "region" : bus.region,
+        "route_start_at_en" : bus.route_start_at_en,
+        "route_start_at_tc" : bus.route_start_at_tc,
+        "route_end_at_en" : bus.route_end_at_en,
+        "route_end_at_tc" : bus.route_end_at_tc,
+      };
+       listJson.add(json);
+    }
+    return json.encode(listJson);
+
   }
 }

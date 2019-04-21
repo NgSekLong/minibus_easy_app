@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:minibus_easy/model/locale/global_translations.dart';
 import 'package:minibus_easy/model/route_detail.dart';
+import 'package:minibus_easy/model/route_info_fetcher.dart';
 import 'package:minibus_easy/view/bus_route_detail_navigation.dart';
 import 'package:minibus_easy/model/bus.dart';
 import 'package:minibus_easy/passenger_layout.dart';
@@ -34,8 +35,10 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
   @override
   Widget build(BuildContext context) {
 
+    RouteInfoFetcher routeInfoFetcher = RouteInfoFetcher();
+
     final String langauge = locale.currentLanguage.toString();
-    final routeDetail = fetchRouteDetail(widget.route_id, widget.route_num_counter);
+    final routeDetail = routeInfoFetcher.fetchRouteDetail(widget.route_id, widget.route_num_counter);
     return Scaffold(
 //      appBar: AppBar(
 //        //leading: new Icon(Icons.android),

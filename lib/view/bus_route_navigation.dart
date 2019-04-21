@@ -3,23 +3,25 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:minibus_easy/model/globals.dart';
+import 'package:minibus_easy/model/route_info_fetcher.dart';
 import 'package:minibus_easy/view/bus_route_detail_navigation.dart';
 import 'package:minibus_easy/model/bus.dart';
 import 'package:minibus_easy/passenger_layout.dart';
 import 'package:minibus_easy/view/bus_route_page.dart';
 
-Future<List<Bus>> fetchBuses() async {
-  final response = await http.post('http://34.92.224.245:80/list_bueses');
-
-  if (response.statusCode == 200) {
-    // If the call to the server was successful, parse the JSON
-    List<Bus> post = Bus.fromJson(json.decode(response.body));
-    return post;
-  } else {
-    // If that call was not successful, throw an error.
-    throw Exception('Failed to load post');
-  }
-}
+//Future<List<Bus>> fetchBuses() async {
+//  final response = await http.post('$BACKEND_SERVER_URL/list_bueses');
+//
+//  if (response.statusCode == 200) {
+//    // If the call to the server was successful, parse the JSON
+//    List<Bus> post = Bus.fromJson(json.decode(response.body));
+//    return post;
+//  } else {
+//    // If that call was not successful, throw an error.
+//    throw Exception('Failed to load post');
+//  }
+//}
 
 class BusRouteNavigation extends StatefulWidget {
   @override
@@ -102,8 +104,11 @@ class _BusRouteNavigationState extends State<BusRouteNavigation>
 
   @override
   Widget build(BuildContext context) {
-    final Future<List<Bus>> buses = fetchBuses();
+    RouteInfoFetcher routeInfoFetcher = RouteInfoFetcher();
+    // final Future<List<Bus>> buses = fetchBuses();
+    final Future<List<Bus>> buses = routeInfoFetcher.fetchBuses();
     return Scaffold(
+
         appBar: AppBar(
           //leading: new Icon(Icons.android),
           titleSpacing: 0.0,

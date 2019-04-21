@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:minibus_easy/model/bus.dart';
+import 'package:minibus_easy/model/globals.dart';
 import 'package:minibus_easy/model/locale/global_translations.dart';
 import 'package:minibus_easy/model/route_detail.dart';
 import 'package:minibus_easy/passenger_layout.dart';
@@ -11,24 +12,22 @@ import 'package:minibus_easy/view/bus_route_detail_page.dart';
 import 'package:minibus_easy/view/bus_route_reference_page.dart';
 
 
-Future<List<RouteDetail>> fetchRouteDetail(String route_id, int route_num_counter) async {
-  final response =
-  // await http.post('http://34.92.224.245:80/list_bueses');
-  await http.post('http://34.92.224.245:80/passenger_request_arrival_real_time',
-  //await http.post('http://10.0.2.2:8000/passenger_request_arrival_real_time',
-    // body: {'route_id' : route_id, 'route_num_counter' : route_num_counter}
-    body: {'route_id' : route_id, 'route_num_counter' : route_num_counter.toString()}
-  );
-  if (response.statusCode == 200) {
-    // If the call to the server was successful, parse the JSON
-
-    List<RouteDetail> listOfRouteDetail = RouteDetail.fromJson(json.decode(response.body));
-    return listOfRouteDetail;
-  } else {
-    // If that call was not successful, throw an error.
-    throw Exception('Failed to load post');
-  }
-}
+//Future<List<RouteDetail>> fetchRouteDetail(String route_id, int route_num_counter) async {
+//  final response = await http.post('$BACKEND_SERVER_URL/passenger_request_arrival_real_time',
+//  //await http.post('http://10.0.2.2:8000/passenger_request_arrival_real_time',
+//    // body: {'route_id' : route_id, 'route_num_counter' : route_num_counter}
+//    body: {'route_id' : route_id, 'route_num_counter' : route_num_counter.toString()}
+//  );
+//  if (response.statusCode == 200) {
+//    // If the call to the server was successful, parse the JSON
+//
+//    List<RouteDetail> listOfRouteDetail = RouteDetail.fromJson(json.decode(response.body));
+//    return listOfRouteDetail;
+//  } else {
+//    // If that call was not successful, throw an error.
+//    throw Exception('Failed to load post');
+//  }
+//}
 
 class BusRouteDetailNavigation extends StatefulWidget {
   final String route_id;

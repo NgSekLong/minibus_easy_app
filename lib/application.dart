@@ -5,9 +5,8 @@ import 'package:minibus_easy/model/locale/global_translations.dart';
 import 'package:minibus_easy/model/locale/translations_bloc.dart';
 import 'package:minibus_easy/view/main_navigation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-//import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
-import 'dart:convert';
 
 ///
 /// This Application provide two purpose:
@@ -23,11 +22,6 @@ class ApplicationState extends State<Application> {
   TranslationsBloc translationsBloc;
 
 
-//  Future<Map<PermissionGroup, PermissionStatus>> requestPermission() async {
-//    Map<PermissionGroup, PermissionStatus> permissions = await PermissionHandler().requestPermissions([PermissionGroup.contacts]);
-//    return permissions;
-//  }
-
   @override
   void initState() {
     super.initState();
@@ -42,7 +36,7 @@ class ApplicationState extends State<Application> {
   @override
   Widget build(BuildContext context) {
     // GPS Permission
-//    requestPermission();
+    PermissionHandler().requestPermissions([PermissionGroup.location]);
 
 
 

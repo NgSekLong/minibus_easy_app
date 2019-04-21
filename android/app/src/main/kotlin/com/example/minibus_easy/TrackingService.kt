@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.IBinder
@@ -40,12 +39,16 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import io.flutter.plugin.common.PluginRegistry
 import java.text.SimpleDateFormat
+
+
 
 
 class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        com.google.android.gms.location.LocationListener {
+        com.google.android.gms.location.LocationListener,
+        ActivityCompat.OnRequestPermissionsResultCallback {
 
     /**
      * General variables
@@ -82,6 +85,10 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
      */
     private lateinit var mActivityRecognitionClient: ActivityRecognitionClient
 
+    /**
+     * GPS Permission checker
+     */
+    private val FLUTTER_PERMISSION_LIBRARY_CODE = 25
 
     // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
     // requestActivityUpdates() and removeActivityUpdates().
@@ -116,17 +123,7 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         mActivityRecognitionClient = ActivityRecognitionClient(this)
         requestActivityUpdatesButtonHandler()
 
-        // GPS Tracker
-        mGoogleApiClient = GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build()
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-
-        mGoogleApiClient.connect()
-
+        buildGoogleApiClient()
     }
 
     override fun onDestroy() {
@@ -143,6 +140,8 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
+        //
+        mGoogleApiClient.connect()
         return START_NOT_STICKY
     }
 
@@ -297,6 +296,16 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
             return
         }
         startLocationUpdates()
+
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        // GPS Tracker
+//        if(mGoogleApiClient == null){
+//            buildGoogleApiClient()
+//            mGoogleApiClient.connect()
+//        }
+
+        //mGoogleApiClient.connect()
         mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
         if (mLocation == null) {
             startLocationUpdates()
@@ -308,6 +317,30 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         } else {
             // Toast.makeText(this, "Location not Detected", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    fun buildGoogleApiClient(){
+        mGoogleApiClient = GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build()
+    }
+
+
+    /**
+     * TODO: make this work.....
+     */
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if(requestCode == FLUTTER_PERMISSION_LIBRARY_CODE) {
+            startLocationUpdates()
+            Toast.makeText(mContext, "Permission Granted!", Toast.LENGTH_SHORT).show()
+            //return true
+        } else {
+            Toast.makeText(mContext, "Permission Denied!", Toast.LENGTH_SHORT).show()
+            //return false
+        }
+
     }
 
     protected fun startLocationUpdates() {
@@ -334,7 +367,7 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
                 mLocationRequest, this)
 
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
+        //LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
         Log.d("reque", "--->>>>")
     }
 
@@ -349,14 +382,14 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
 
     override fun onLocationChanged(location: Location) {
 
-        val msg = "Updated Location: " +
-                java.lang.Double.toString(location.latitude) + "," +
-                java.lang.Double.toString(location.longitude)
+//        val msg = "Updated Location: " +
+//                java.lang.Double.toString(location.latitude) + "," +
+//                java.lang.Double.toString(location.longitude)
         val latitude = location.latitude.toString()
         val longitude = location.longitude.toString()
         val gpsText = "[GPS: $latitude, $longitude]"
         createNotificationForGPSTracker(gpsText)
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        // Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
 
