@@ -33,6 +33,7 @@ dependencies:
   flutter_custom_tabs: ^0.6.0
 
   google_maps_flutter: ^0.5.0
+  permission_handler: ^2.2.0
 
 dev_dependencies:
   flutter_test:

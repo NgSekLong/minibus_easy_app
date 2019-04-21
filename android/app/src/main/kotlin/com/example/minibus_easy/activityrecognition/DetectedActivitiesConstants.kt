@@ -24,6 +24,7 @@ internal object DetectedActivitiesConstants {
     val NOTIFICATION_CHANNEL_ID = "minibusEasyNotification"
     val NOTIFICATION_CHANNEL_NAME = "Minibus Easy Notification"
     val TRACKING_SERVICE_TAG = "TrackingService"
+    val NOTIFICATION_ID = 1
 
     /**
      * The desired time between activity detections. Larger values result in fewer activity

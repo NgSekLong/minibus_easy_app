@@ -5,7 +5,15 @@ import 'package:minibus_easy/model/locale/global_translations.dart';
 import 'package:minibus_easy/model/locale/translations_bloc.dart';
 import 'package:minibus_easy/view/main_navigation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:async';
+import 'dart:convert';
 
+///
+/// This Application provide two purpose:
+/// 1. Load the translation library
+/// 2. Asked for GPS. TODO: Evaluate if need to asked for GPS at this stage
+///
 class Application extends StatefulWidget {
   @override
   ApplicationState createState() => ApplicationState();
@@ -13,6 +21,12 @@ class Application extends StatefulWidget {
 
 class ApplicationState extends State<Application> {
   TranslationsBloc translationsBloc;
+
+
+  Future<Map<PermissionGroup, PermissionStatus>> requestPermission() async {
+    Map<PermissionGroup, PermissionStatus> permissions = await PermissionHandler().requestPermissions([PermissionGroup.contacts]);
+    return permissions;
+  }
 
   @override
   void initState() {
@@ -25,9 +39,13 @@ class ApplicationState extends State<Application> {
     translationsBloc?.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
+    // GPS Permission
+    requestPermission();
+
+
+
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,

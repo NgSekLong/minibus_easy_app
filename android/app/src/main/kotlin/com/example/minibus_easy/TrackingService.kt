@@ -1,14 +1,22 @@
 package com.example.minibus_easy
 
+import android.Manifest
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.os.Bundle
 import android.os.IBinder
 import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 
 import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.DetectedActivity
@@ -22,30 +30,51 @@ import java.util.Date
 import androidx.core.app.NotificationCompat
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants.NOTIFICATION_CHANNEL_ID
+import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants.NOTIFICATION_ID
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants.TRACKING_SERVICE_TAG
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesIntentService
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesUtils
+import com.example.minibus_easy.gpstracker.GPSTrackerConstant.FASTEST_INTERVAL
+import com.example.minibus_easy.gpstracker.GPSTrackerConstant.UPDATE_INTERVAL
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import java.text.SimpleDateFormat
 
-class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeListener {
+
+class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeListener,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        com.google.android.gms.location.LocationListener {
+
+    /**
+     * General variables
+     */
+    private lateinit var mContext: Context
 
 
-//    companion object {
-//
-//
-//        protected val TAG = "TrackingService"
-//        protected val CHANNEL_ID = "minibusEasyChannel"
-//    }
-
+    /**
+     * Variables for Notification
+     */
     private val mBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-
-    //    private NotificationManager mNotificationManager =
-    //            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     //Different Id's will show up as different notifications
     //Some things we only have to set the first time.
     private var notificationFirstTime = true
-    private val mNotificationId = 1
 
-    private lateinit var mContext: Context
+    private var detectedActivitiesShortText = ""
+    private var detectedActivitiesLongText = ""
+
+    private var gpsTrackerText = ""
+
+
+
+    /**
+     * Variables for GPS tracking
+     */
+    private lateinit var mGoogleApiClient: GoogleApiClient
+    private lateinit var mLocation: Location
+    private lateinit var locationManager: LocationManager
+    private lateinit var mLocationRequest: LocationRequest
 
 
     /**
@@ -54,16 +83,11 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
     private lateinit var mActivityRecognitionClient: ActivityRecognitionClient
 
 
-// We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
+    // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
     // requestActivityUpdates() and removeActivityUpdates().
     /**
      * Gets a PendingIntent to be sent for each activity detection.
      */
-//    private val activityDetectionPendingIntent: PendingIntent
-//        get() {
-//            val intent = Intent(this, DetectedActivitiesIntentService::class.java)
-//            return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-//        }
 
     private fun getActivityDetectionPendingIntent(): PendingIntent {
         val intent = Intent(this, DetectedActivitiesIntentService::class.java)
@@ -81,32 +105,74 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         super.onCreate()
         mContext = this
 
-        val detectedActivities = DetectedActivitiesUtils.detectedActivitiesFromJson(
-                PreferenceManager.getDefaultSharedPreferences(this).getString(
-                        DetectedActivitiesConstants.KEY_DETECTED_ACTIVITIES, ""))
+        // Detected Activities
+//        val detectedActivities = DetectedActivitiesUtils.detectedActivitiesFromJson(
+//                PreferenceManager.getDefaultSharedPreferences(this).getString(
+//                        DetectedActivitiesConstants.KEY_DETECTED_ACTIVITIES, ""))
 
 
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this)
         mActivityRecognitionClient = ActivityRecognitionClient(this)
         requestActivityUpdatesButtonHandler()
+
+        // GPS Tracker
+        mGoogleApiClient = GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build()
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+
+        mGoogleApiClient.connect()
+
     }
 
     override fun onDestroy() {
         PreferenceManager.getDefaultSharedPreferences(this)
                 .unregisterOnSharedPreferenceChangeListener(this)
+
+        // GPS Tracker
+
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect()
+        }
         super.onDestroy()
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
-        return Service.START_NOT_STICKY
+        return START_NOT_STICKY
     }
 
-    fun createNotification(chosenString: String, activitiesString: String) {
+    private fun createNotificationForDetectedActivities(chosenString: String, activitiesString: String){
 
-        val currentTime = Calendar.getInstance().time
-        val timeString = currentTime.hours.toString() + ":" + currentTime.minutes + ":" + currentTime.seconds
+
+        detectedActivitiesShortText = chosenString
+        detectedActivitiesLongText = activitiesString
+        createNotification()
+
+    }
+
+    private fun createNotificationForGPSTracker(gpsString: String){
+
+
+        gpsTrackerText = gpsString
+        createNotification()
+
+    }
+
+
+
+    private fun createNotification() {
+
+        val currentTime = SimpleDateFormat("HH:mm:ss").format(Date())
+
+        val title = "Tracking on: $currentTime in $gpsTrackerText "
+        val contentText = detectedActivitiesShortText
+        val bigText = detectedActivitiesLongText
+
 
         // String input = intent.getStringExtra("inputExtra");
         if (notificationFirstTime) {
@@ -114,30 +180,17 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
             val pendingIntent = PendingIntent.getActivity(this,
                     0, notificationIntent, 0)
             mBuilder
-                    .setContentTitle("Tracking on: $timeString")
-                    .setContentText(chosenString)
                     .setSmallIcon(R.drawable.notification_icon_background)
                     .setContentIntent(pendingIntent).build()
             notificationFirstTime = false
         }
         mBuilder
+                .setContentTitle(title)
+                .setContentText(contentText)
                 .setStyle(NotificationCompat.BigTextStyle()
-                        .bigText(activitiesString))
-        //        Intent notificationIntent = new Intent(this, MainActivity.class);
-        //        PendingIntent pendingIntent = PendingIntent.getActivity(this,
-        //                0, notificationIntent, 0);
-        //
-        //        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-        //                .setContentTitle("Tracking on: " + timeString)
-        //                .setContentText(chosenString)
-        //                .setSmallIcon(R.drawable.ic_launcher)
-        //
-        //                .setStyle(new NotificationCompat.BigTextStyle()
-        //                        .bigText(activitiesString))
-        //
-        //                .setContentIntent(pendingIntent).build();
+                        .bigText(bigText))
 
-        startForeground(mNotificationId, mBuilder.build())
+        startForeground(NOTIFICATION_ID, mBuilder.build())
 
     }
 
@@ -192,8 +245,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
                 PreferenceManager.getDefaultSharedPreferences(mContext)
                         .getString(DetectedActivitiesConstants.KEY_DETECTED_ACTIVITIES, ""))
 
-        //mAdapter.updateActivities(detectedActivities);
-
         updateActivities(detectedActivities)
     }
 
@@ -217,43 +268,95 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
                 chosenActivity = detectedActivity
             }
         }
-        if(chosenActivity == null){
+        if (chosenActivity == null) {
             return
         }
         chosenActivity = chosenActivity!!
 
-        //HashMap<Integer, Integer> detectedActivitiesMap = new HashMap<>();
-        //        for (DetectedActivity activity : detectedActivities) {
-        //            detectedActivitiesMap.put(activity.getType(), activity.getConfidence());
-        //        }
-        //        // Every time we detect new activities, we want to reset the confidence level of ALL
-        //        // activities that we monitor. Since we cannot directly change the confidence
-        //        // of a DetectedActivity, we use a temporary list of DetectedActivity objects. If an
-        //        // activity was freshly detected, we use its confidence level. Otherwise, we set the
-        //        // confidence level to zero.
-        //        ArrayList<DetectedActivity> tempList = new ArrayList<>();
-        //        for (int i = 0; i < DetectedActivitiesConstants.MONITORED_ACTIVITIES.length; i++) {
-        //            int confidence = detectedActivitiesMap.containsKey(DetectedActivitiesConstants.MONITORED_ACTIVITIES[i]) ?
-        //                    detectedActivitiesMap.get(DetectedActivitiesConstants.MONITORED_ACTIVITIES[i]) : 0;
-        //
-        //            tempList.add(new DetectedActivity(DetectedActivitiesConstants.MONITORED_ACTIVITIES[i],
-        //                    confidence));
-        //        }
-        //
-        //        // Remove all items.
-        //        this.clear();
-        //
-        //        // Adding the new list items notifies attached observers that the underlying data has
-        //        // changed and views reflecting the data should refresh.
-        //        for (DetectedActivity detectedActivity: tempList) {
-        //            this.add(detectedActivity);
-        //        }
         val chosenString = DetectedActivitiesUtils.getActivityDescription(mContext, chosenActivity)
         val activitiesString = DetectedActivitiesUtils.getAllActivitiesDescription(mContext, detectedActivities)
+        createNotificationForDetectedActivities(chosenString, activitiesString)
+    }
 
-        createNotification(chosenString, activitiesString)
+    ////////////////////////GPS//////////////////////////////
 
 
+    override fun onConnected(bundle: Bundle?) {
+
+//        if (ActivityCompat.checkSelfPermission(this,
+//                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        startLocationUpdates()
+        mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
+        if (mLocation == null) {
+            startLocationUpdates()
+        }
+        if (mLocation != null) {
+            val latitude = mLocation.getLatitude()
+            val longitude = mLocation.getLongitude()
+            Toast.makeText(this, "Latitude:$latitude, Longtitude: $longitude", Toast.LENGTH_SHORT).show();
+        } else {
+            // Toast.makeText(this, "Location not Detected", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    protected fun startLocationUpdates() {
+        // Create the location request
+        mLocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(UPDATE_INTERVAL)
+                .setFastestInterval(FASTEST_INTERVAL)
+        // Request location updates
+        if (ActivityCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                mLocationRequest, this)
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
+        Log.d("reque", "--->>>>")
+    }
+
+    override fun onConnectionSuspended(i: Int) {
+        Log.i(ContentValues.TAG, "Connection Suspended")
+        mGoogleApiClient.connect()
+    }
+
+    override fun onConnectionFailed(connectionResult: ConnectionResult) {
+        Log.i(ContentValues.TAG, "Connection failed. Error: " + connectionResult.errorCode)
+    }
+
+    override fun onLocationChanged(location: Location) {
+
+        val msg = "Updated Location: " +
+                java.lang.Double.toString(location.latitude) + "," +
+                java.lang.Double.toString(location.longitude)
+        val latitude = location.latitude.toString()
+        val longitude = location.longitude.toString()
+        val gpsText = "[GPS: $latitude, $longitude]"
+        createNotificationForGPSTracker(gpsText)
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
 
