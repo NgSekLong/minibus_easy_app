@@ -394,3 +394,87 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
 
 
 }
+
+
+
+////////////////////////////////////////////////////////Service Location sample code///////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//public class LocationBgService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+//
+//private GoogleApiClient mGoogleAPIClient;
+//private LocationRequest mLocationRequest;
+//private FusedLocationProviderApi mLocationProvider;
+//
+//@Nullable
+//@Override
+//public IBinder onBind(Intent intent) {
+//    return null;
+//}
+//
+//@Override
+//public void onCreate() {
+//    super.onCreate();
+//
+//    mGoogleAPIClient = new GoogleApiClient.Builder(this)
+//            .addApi(LocationServices.API)
+//            .addConnectionCallbacks(this)
+//            .addOnConnectionFailedListener(this)
+//            .build();
+//
+//    mLocationProvider = LocationServices.FusedLocationApi;
+//
+//    mLocationRequest = new LocationRequest();
+//    mLocationRequest.setInterval(60000);
+//    mLocationRequest.setFastestInterval(15000);
+//    mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+//}
+//
+//@Override
+//public int onStartCommand(Intent intent, int flags, int startId) {
+//    mGoogleAPIClient.connect();
+//    return START_STICKY;
+//}
+//
+//@Override
+//public void onConnected(@Nullable Bundle bundle) {
+//    RequestLocationUpdates();
+//}
+//
+//private void RequestLocationUpdates() {
+//    if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//
+//    }
+//       LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleAPIClient, mLocationRequest, this); //getting error here..for casting..!
+//
+//}
+//
+//@Override
+//public void onConnectionSuspended(int i) {
+//
+//}
+//
+//@Override
+//public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+//
+//}
+//
+//@Override
+//public void onLocationChanged(Location location) {
+//    Log.d("Background Location ", "::::***********Latitude: " + location.getLatitude() + " Longitude: " + location.getLongitude());
+//}
+//
+//@Override
+//public void onStatusChanged(String provider, int status, Bundle extras) {
+//
+//}
+//
+//@Override
+//public void onProviderEnabled(String provider) {
+//
+//}
+//
+//@Override
+//public void onProviderDisabled(String provider) {
+//
+//}
+//}
