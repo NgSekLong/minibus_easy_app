@@ -15,7 +15,7 @@ class BookmarkPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Text('bookmark')
+      child: Center(child: Text('Bookmark coming soon!'),)
     );
   }
 

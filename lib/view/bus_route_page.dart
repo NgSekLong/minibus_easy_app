@@ -10,6 +10,7 @@ import 'package:minibus_easy/view/bus_route_detail_page.dart';
 import 'package:minibus_easy/view/bus_route_detail_navigation.dart';
 import 'package:minibus_easy/model/bus.dart';
 import 'package:minibus_easy/passenger_layout.dart';
+import 'package:minibus_easy/view/component/bus_route_row.dart';
 
 class BusRoutePage extends StatefulWidget {
   final Future<List<Bus>> buses;
@@ -61,70 +62,11 @@ class _BusRoutePageState extends State<BusRoutePage>
               }
               int currentRouteNumCount = routeNumCounter;
               previousRouteId = route_id;
-
-              //print(route_id +":"+ routeNumCounter.toString());
-
-              // bus.route_id
-              String demoText = "debug: route_id: ${bus.route_id}, \n";
-
-              if (langauge == 'tc') {
-                demoText +=
-                    "由: '${bus.route_start_at_tc}' \n到: '${bus.route_end_at_tc}'";
-              } else {
-                demoText +=
-                    "From: '${bus.route_start_at_en}' \nTo: '${bus.route_end_at_en}'";
-              }
-//              demoText +=
-//                  "From '${bus.route_start_at_en}' \nTo: '${bus.route_end_at_en}', \n'${bus.route_start_at_tc}' 到 '${bus.route_end_at_tc}'";
-
-              final leftSection = new Container(
-                padding: EdgeInsets.only(right: 5),
-                child: CircleAvatar(
-                  child: Text(
-                    bus.route_number,
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  backgroundColor: Colors.greenAccent[100],
-                  radius: 24.0,
-                ),
-              );
-              final middleSection = new Container(
-                child: Flexible(child: Text(demoText)),
-              );
-              ListTile listTile = new ListTile(
-                title: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  //mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-//                      Expanded(
-//                        flex: 1,
-//                        child: Text(bus.route_number),
-//                      ),
-//                      Expanded(
-//                        flex: 9,
-//                        child: Text(demoText),
-//                      ),
-                    leftSection,
-                    middleSection
-                  ],
-                ),
-//                  Row(children: <Widget>[
-//
-//                    Text(bus.route_number),
-//                    Text(demoText),
-//                  ],),
-
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BusRouteDetailNavigation(
-                          route_id: route_id,
-                          route_num_counter: currentRouteNumCount
-                          ),
-                    ),
-                  );
-                },
+              
+              Widget listTile = BusRouteRow(
+                bus: bus,
+                currentRouteNumCount: currentRouteNumCount,
+                langauge: langauge,
               );
               listOfRow.add(listTile);
             }

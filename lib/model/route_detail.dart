@@ -1,5 +1,8 @@
 
+import 'dart:collection';
 import 'dart:convert';
+
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class RouteDetail {
 
@@ -9,7 +12,13 @@ class RouteDetail {
   final String stop_name_tc;
   final int duration_sec;
 
-  RouteDetail({this.stop_name_en, this.stop_name_tc, this.duration_sec});
+  // final LinkedHashMap<String, dynamic> latlng;
+
+  final LatLng latlng;
+
+  // final LatLng latlng;
+
+  RouteDetail({this.stop_name_en, this.stop_name_tc, this.duration_sec, this.latlng});
 
   //factory Post.fromJson(Map<String, dynamic> json) {
   static List<RouteDetail> fromJson(List<dynamic> jsons) {
@@ -25,11 +34,24 @@ class RouteDetail {
         duration_sec = int.parse(duration_sec_dynamic);
       }
 
+      LatLng latlng;
+      if(json.containsKey('latlng')){
+        final LinkedHashMap<String, dynamic> latlngInput = json['latlng'];
+         latlng = LatLng(latlngInput['lat'], latlngInput['lng']);
+
+
+
+      }
+
+
+
+
 
       RouteDetail routeDetail =  RouteDetail(
         stop_name_en : json['stop_name_en'],
         stop_name_tc : json['stop_name_tc'],
         duration_sec : duration_sec,
+        latlng: latlng,
       );
       listOfRouteDetail.add(routeDetail);
     }
@@ -38,12 +60,25 @@ class RouteDetail {
 
 
   static String toJson(List<RouteDetail> listRouteDetail){
-    List<Map<String, String>> listJson = [];
+    List<Map<String, dynamic>> listJson = [];
     for(RouteDetail routeDetail in listRouteDetail){
-      Map<String, String> json = {
+      Map<String, double> latlng;
+      if(routeDetail.latlng != null){
+        latlng = {
+          "lat" : routeDetail.latlng.latitude,
+          "lng" : routeDetail.latlng.longitude
+        };
+        // latlng = JsonEncoder().convert(latlngMap);
+        // json.encode(latlngMap);
+      }
+
+      //String latlng = routeDetail.latlng.toString()
+
+      Map<String, dynamic> json = {
         "stop_name_en" : routeDetail.stop_name_en,
         "stop_name_tc" : routeDetail.stop_name_tc,
-        "duration_sec" : routeDetail.duration_sec.toString()
+        "duration_sec" : routeDetail.duration_sec.toString(),
+        "latlng" : latlng
       };
       listJson.add(json);
     }

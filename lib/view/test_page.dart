@@ -52,6 +52,20 @@ class TestPage extends StatelessWidget {
                 content: new Text(role),
               ));
             },
+          ),RaisedButton(
+            padding: const EdgeInsets.all(10.0),
+            child: const Text('Remove gps points'),
+            color: Colors.lightGreenAccent,
+            //elevation: 5.0,
+            onPressed: () async {
+              final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+              prefs.remove(SAVE_GPS_PREF);
+
+              Scaffold.of(context).showSnackBar(new SnackBar(
+                content: new Text('Done removing SAVE_GPS_PREF'),
+              ));
+            },
           ),
         ],
       )

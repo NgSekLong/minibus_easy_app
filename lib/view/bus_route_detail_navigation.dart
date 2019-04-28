@@ -8,6 +8,7 @@ import 'package:minibus_easy/model/globals.dart';
 import 'package:minibus_easy/model/locale/global_translations.dart';
 import 'package:minibus_easy/model/route_detail.dart';
 import 'package:minibus_easy/passenger_layout.dart';
+import 'package:minibus_easy/view/bus_route_detail_map_page.dart';
 import 'package:minibus_easy/view/bus_route_detail_page.dart';
 import 'package:minibus_easy/view/bus_route_reference_page.dart';
 
@@ -48,7 +49,7 @@ class _BusRouteDetailNavigationState extends State<BusRouteDetailNavigation> wit
     super.initState();
 
     // Initialize the Tab Controller
-    controller = new TabController(length: 2, vsync: this);
+    controller = new TabController(length: 3, vsync: this);
   }
 
   @override
@@ -70,6 +71,9 @@ class _BusRouteDetailNavigationState extends State<BusRouteDetailNavigation> wit
                 text: 'ROUTE',
               ),
               new Tab(
+                text: 'MAP',
+              ),
+              new Tab(
                 text: 'PRICE / INFO',
               ),
             ],
@@ -81,6 +85,7 @@ class _BusRouteDetailNavigationState extends State<BusRouteDetailNavigation> wit
 
   TabBarView getTabBarView(var tabs) {
     return new TabBarView(
+      physics: NeverScrollableScrollPhysics(),
       // Add tabs as widgets
       children: tabs,
       // set the controller
@@ -110,6 +115,7 @@ class _BusRouteDetailNavigationState extends State<BusRouteDetailNavigation> wit
         body:
         getTabBarView(<Widget>[
           BusRouteDetailPage(route_id: widget.route_id ,route_num_counter: widget.route_num_counter,),
+          BusRouteDetailMapPage(route_id: widget.route_id ,route_num_counter: widget.route_num_counter,),
           BusRouteReferencePage(route_id: widget.route_id ),
         ])
 

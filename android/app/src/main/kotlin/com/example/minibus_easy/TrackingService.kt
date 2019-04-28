@@ -17,14 +17,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 
-import com.google.android.gms.location.ActivityRecognitionClient
-import com.google.android.gms.location.DetectedActivity
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.android.gms.tasks.Task
-
 import java.util.ArrayList
-import java.util.Calendar
 import java.util.Date
 import androidx.core.app.NotificationCompat
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants
@@ -35,15 +28,17 @@ import com.example.minibus_easy.activityrecognition.DetectedActivitiesIntentServ
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesUtils
 import com.example.minibus_easy.gpstracker.GPSTrackerConstant.FASTEST_INTERVAL
 import com.example.minibus_easy.gpstracker.GPSTrackerConstant.UPDATE_INTERVAL
+//import com.example.minibus_easy.gpstracker.LatLngTime
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import io.flutter.plugin.common.PluginRegistry
+import com.google.android.gms.location.*
+import org.json.JSONArray
 import java.text.SimpleDateFormat
 
-
-
+//
+import kotlinx.serialization.*
+import kotlinx.serialization.json.Json
+import java.io.File
 
 class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
@@ -78,7 +73,10 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
     private lateinit var mLocation: Location
     private lateinit var locationManager: LocationManager
     private lateinit var mLocationRequest: LocationRequest
+    private lateinit var mLocationProvider : FusedLocationProviderApi
 
+    @Serializable
+    data class LatLngTime(val lat : String, val lng: String, val time: String)
 
     /**
      * The entry point for interacting with activity recognition.
@@ -95,6 +93,13 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
     /**
      * Gets a PendingIntent to be sent for each activity detection.
      */
+
+    /**
+     * Save GPS Pref
+     */
+    private val SAVE_GPS_PREF = "SAVE_GPS_PREF"
+    private val SHARED_PREFERENCES_NAME = "FlutterSharedPreferences"
+    private val SHARED_PREFERENCES_PREFIX = "flutter."
 
     private fun getActivityDetectionPendingIntent(): PendingIntent {
         val intent = Intent(this, DetectedActivitiesIntentService::class.java)
@@ -123,7 +128,25 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         mActivityRecognitionClient = ActivityRecognitionClient(this)
         requestActivityUpdatesButtonHandler()
 
-        buildGoogleApiClient()
+
+
+
+        // GPS Tracker logic
+        mGoogleApiClient = GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build()
+
+        mLocationProvider = LocationServices.FusedLocationApi;
+
+
+        mLocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(UPDATE_INTERVAL)
+                .setFastestInterval(FASTEST_INTERVAL)
+
+
     }
 
     override fun onDestroy() {
@@ -146,17 +169,12 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
     }
 
     private fun createNotificationForDetectedActivities(chosenString: String, activitiesString: String){
-
-
         detectedActivitiesShortText = chosenString
         detectedActivitiesLongText = activitiesString
         createNotification()
-
     }
 
     private fun createNotificationForGPSTracker(gpsString: String){
-
-
         gpsTrackerText = gpsString
         createNotification()
 
@@ -190,7 +208,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
                         .bigText(bigText))
 
         startForeground(NOTIFICATION_ID, mBuilder.build())
-
     }
 
 
@@ -295,8 +312,11 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
             // for ActivityCompat#requestPermissions for more details.
             return
         }
-        startLocationUpdates()
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                mLocationRequest, this)
+        //startLocationUpdates()
 
+        // TODO: Check if GPS / Netowrk is enabled before accessing GPS
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         // GPS Tracker
@@ -313,9 +333,9 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         if (mLocation != null) {
             val latitude = mLocation.getLatitude()
             val longitude = mLocation.getLongitude()
-            Toast.makeText(this, "Latitude:$latitude, Longtitude: $longitude", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Latitude:$latitude, Longtitude: $longitude", Toast.LENGTH_SHORT).show()
         } else {
-            // Toast.makeText(this, "Location not Detected", Toast.LENGTH_SHORT).show();
+             Toast.makeText(this, "Location not Detected", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -388,93 +408,81 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         val latitude = location.latitude.toString()
         val longitude = location.longitude.toString()
         val gpsText = "[GPS: $latitude, $longitude]"
+        saveGpsPref(latitude, longitude)
         createNotificationForGPSTracker(gpsText)
         // Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
 
-}
+
+    fun saveGpsPref(appendLat : String, appendLng : String){
+        val prefs = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+        val saveGpsPref = prefs.getString("$SHARED_PREFERENCES_PREFIX$SAVE_GPS_PREF", "[]")
+
+        val latlngJsonArray  = JSONArray(saveGpsPref)
+        //val latlngArray: MutableList<Map<String, String>> = ArrayList()
+        val latlngArray: MutableList<LatLngTime> = ArrayList()
+
+        for(i in 0..latlngJsonArray.length() -1 ){
+            val latitudeLongtitude = latlngJsonArray.getJSONObject(i)
+
+            val lat = latitudeLongtitude.getString("lat")
+            val lng = latitudeLongtitude.getString("lng")
+            val time = latitudeLongtitude.getString("time")
+
+            val latlng = LatLngTime(lat,lng,time)
+
+            latlngArray.add(latlng)
+        }
+        val currentUnixTime = System.currentTimeMillis() / 1000
+        val currentUnixTimeString = currentUnixTime.toString()
+        val appendlatlng = LatLngTime(appendLat,appendLng, currentUnixTimeString)
+
+        latlngArray.add(appendlatlng)
+
+        val jsonData = Json.stringify(LatLngTime.serializer().list, latlngArray)
+
+//
+        // val jsonData = Json.stringify(Map<String,String>.serializer().list, latlngArray)
+//
+//
+//
+//        if (restoredText != null) {
+//            val name = prefs.getString("name", "No name defined")//"No name defined" is the default value.
+//            val idName = prefs.getInt("idName", 0) //0 is the default value.
+//        }
+
+        val editor = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+        editor.putString("$SHARED_PREFERENCES_PREFIX$SAVE_GPS_PREF", jsonData)
+        editor.apply()
+        // getAllGPSPrefForLols()
+    }
+
+    fun getAllGPSPrefForLols(){
+        val prefsdir = File(applicationInfo.dataDir, "shared_prefs")
+
+        if(prefsdir.exists() && prefsdir.isDirectory()) {
+
+            val list = prefsdir.list()
+
+            list.forEach {
+                val item = it!!
+                val preffile = item.substring(0, item.length - 4)
+                val sp2 = getSharedPreferences(preffile, Context.MODE_PRIVATE)
+
+                val map = sp2.all
+
+                print(map)
 
 
+            }
+        }
+    }
 
-////////////////////////////////////////////////////////Service Location sample code///////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//public class LocationBgService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
-//
-//private GoogleApiClient mGoogleAPIClient;
-//private LocationRequest mLocationRequest;
-//private FusedLocationProviderApi mLocationProvider;
-//
-//@Nullable
-//@Override
-//public IBinder onBind(Intent intent) {
-//    return null;
-//}
-//
-//@Override
-//public void onCreate() {
-//    super.onCreate();
-//
-//    mGoogleAPIClient = new GoogleApiClient.Builder(this)
-//            .addApi(LocationServices.API)
-//            .addConnectionCallbacks(this)
-//            .addOnConnectionFailedListener(this)
-//            .build();
-//
-//    mLocationProvider = LocationServices.FusedLocationApi;
-//
-//    mLocationRequest = new LocationRequest();
-//    mLocationRequest.setInterval(60000);
-//    mLocationRequest.setFastestInterval(15000);
-//    mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-//}
-//
-//@Override
-//public int onStartCommand(Intent intent, int flags, int startId) {
-//    mGoogleAPIClient.connect();
-//    return START_STICKY;
-//}
-//
-//@Override
-//public void onConnected(@Nullable Bundle bundle) {
-//    RequestLocationUpdates();
-//}
-//
-//private void RequestLocationUpdates() {
-//    if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//
+//    fun resetGpsPref(){
+//        val editor = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+//        editor.putString(SAVE_GPS_PREF, "[]")
+//        editor.apply()
 //    }
-//       LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleAPIClient, mLocationRequest, this); //getting error here..for casting..!
-//
-//}
-//
-//@Override
-//public void onConnectionSuspended(int i) {
-//
-//}
-//
-//@Override
-//public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-//
-//}
-//
-//@Override
-//public void onLocationChanged(Location location) {
-//    Log.d("Background Location ", "::::***********Latitude: " + location.getLatitude() + " Longitude: " + location.getLongitude());
-//}
-//
-//@Override
-//public void onStatusChanged(String provider, int status, Bundle extras) {
-//
-//}
-//
-//@Override
-//public void onProviderEnabled(String provider) {
-//
-//}
-//
-//@Override
-//public void onProviderDisabled(String provider) {
-//
-//}
-//}
+
+}
