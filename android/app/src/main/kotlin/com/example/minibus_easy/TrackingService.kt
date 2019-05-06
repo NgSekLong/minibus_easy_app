@@ -10,9 +10,12 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.preference.PreferenceManager
+import android.provider.Settings
+import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -20,6 +23,7 @@ import androidx.core.app.ActivityCompat
 import java.util.ArrayList
 import java.util.Date
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants.NOTIFICATION_CHANNEL_ID
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesConstants.NOTIFICATION_ID
@@ -28,6 +32,10 @@ import com.example.minibus_easy.activityrecognition.DetectedActivitiesIntentServ
 import com.example.minibus_easy.activityrecognition.DetectedActivitiesUtils
 import com.example.minibus_easy.gpstracker.GPSTrackerConstant.FASTEST_INTERVAL
 import com.example.minibus_easy.gpstracker.GPSTrackerConstant.UPDATE_INTERVAL
+import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.result.Result
+
 //import com.example.minibus_easy.gpstracker.LatLngTime
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -316,7 +324,12 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
                 mLocationRequest, this)
         //startLocationUpdates()
 
-        // TODO: Check if GPS / Netowrk is enabled before accessing GPS
+        // TODO: Instead of just quitting after seeing no GPS, make something different
+
+        if(!isLocationServicesAvailable(mContext)){
+            return
+        }
+
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         // GPS Tracker
@@ -346,6 +359,33 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
                 .addApi(LocationServices.API)
                 .build()
     }
+    fun  isLocationServicesAvailable(context: Context): Boolean {
+
+        var locationMode = 0
+        val locationProviders: String
+        var isAvailable = false
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+            try {
+                locationMode = Settings.Secure.getInt(context.contentResolver, Settings.Secure.LOCATION_MODE)
+            } catch (e: Settings.SettingNotFoundException) {
+                e.printStackTrace()
+            }
+
+            isAvailable = (locationMode != Settings.Secure.LOCATION_MODE_OFF);
+        }
+        else {
+            locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            isAvailable = !TextUtils.isEmpty(locationProviders);
+        }
+
+        val coarsePermissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) === PackageManager.PERMISSION_GRANTED
+        val finePermissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) === PackageManager.PERMISSION_GRANTED
+
+
+        return isAvailable && (coarsePermissionCheck || finePermissionCheck)
+    }
+
 
 
     /**
@@ -438,7 +478,10 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         val currentUnixTimeString = currentUnixTime.toString()
         val appendlatlng = LatLngTime(appendLat,appendLng, currentUnixTimeString)
 
+        sentLatLngToServer(appendlatlng)
+
         latlngArray.add(appendlatlng)
+
 
         val jsonData = Json.stringify(LatLngTime.serializer().list, latlngArray)
 
@@ -457,24 +500,17 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         editor.apply()
         // getAllGPSPrefForLols()
     }
-
-    fun getAllGPSPrefForLols(){
-        val prefsdir = File(applicationInfo.dataDir, "shared_prefs")
-
-        if(prefsdir.exists() && prefsdir.isDirectory()) {
-
-            val list = prefsdir.list()
-
-            list.forEach {
-                val item = it!!
-                val preffile = item.substring(0, item.length - 4)
-                val sp2 = getSharedPreferences(preffile, Context.MODE_PRIVATE)
-
-                val map = sp2.all
-
-                print(map)
-
-
+    fun sentLatLngToServer(latLngTime: LatLngTime) {
+        "https://httpbin.org/get"
+        .httpGet()
+        .responseString { request, response, result ->
+            when (result) {
+                is Result.Failure -> {
+                    val ex = result.getException()
+                }
+                is Result.Success -> {
+                    val data = result.get()
+                }
             }
         }
     }

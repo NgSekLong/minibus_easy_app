@@ -38,14 +38,7 @@ class RouteDetail {
       if(json.containsKey('latlng')){
         final LinkedHashMap<String, dynamic> latlngInput = json['latlng'];
          latlng = LatLng(latlngInput['lat'], latlngInput['lng']);
-
-
-
       }
-
-
-
-
 
       RouteDetail routeDetail =  RouteDetail(
         stop_name_en : json['stop_name_en'],

@@ -1,6 +1,12 @@
 import 'package:flutter/foundation.dart';
 import "package:flutter/material.dart";
+import 'package:minibus_easy/model/bus.dart';
+import 'package:minibus_easy/model/route_info_fetcher.dart';
 import 'package:minibus_easy/passenger_layout.dart';
+import 'package:minibus_easy/view/bus_route_page.dart';
+import 'package:minibus_easy/view/component/numpad_gesture_painter.dart';
+
+enum InputType { TAP, SWIPE, CLEAR, BACK }
 
 class NumpadPage extends StatefulWidget {
   @override
@@ -10,15 +16,54 @@ class NumpadPage extends StatefulWidget {
 class _NumpadPageState extends State<NumpadPage>
     with SingleTickerProviderStateMixin {
   String _debugText = '';
+  List<String> _currentNumbers = [];
 
-  refresh(String text) {
+//  refresh(String text) {
+//    setState(() {
+//      _debugText = text;
+//    });
+//  }
+
+  inputAction(InputType inputType, [List<String> inputNumbers ]) {
     setState(() {
-      _debugText = text;
+      switch (inputType) {
+        case InputType.SWIPE:
+          // When Swipe, replace all currentNumbers
+          _currentNumbers = inputNumbers;
+          break;
+        case InputType.TAP:
+          _currentNumbers.addAll(inputNumbers);
+          break;
+        case InputType.CLEAR:
+          _currentNumbers.clear();
+          break;
+        case InputType.BACK:
+          _currentNumbers.removeLast();
+          break;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    RouteInfoFetcher routeInfoFetcher = RouteInfoFetcher();
+    final Future<List<Bus>> buses = routeInfoFetcher.fetchBuses();
+//    return Scaffold(
+//      body: Container(
+//        child: SizedBox(
+//          width: double.infinity,
+//          height: double.infinity,
+//          child: Column(
+//            children: <Widget>[
+//              Expanded(
+//                child: BusRoutePage(buses: buses, region: 'Hong Kong Island'),
+//              )
+//            ],
+//          ),
+//        ),
+//      ),
+//    );
+//    return BusRoutePage(buses: buses, region: 'Hong Kong Island');
     return new Scaffold(
       //appBar: PassengerLayout().getAppBar(),
       //bottomNavigationBar: PassengerLayout().getBottomNavigationBar(),
@@ -30,19 +75,29 @@ class _NumpadPageState extends State<NumpadPage>
               //color: Colors.green,
               child: Column(
                 children: <Widget>[
-                  Text(
-                    _debugText,
-                    style: new TextStyle(
-                      fontSize: 30.0,
+                  _DisplayNumber(
+                    displayNumber: _currentNumbers,
+                  ),
+
+//                  Text(
+//                    _debugText,
+//                    style: new TextStyle(
+//                      fontSize: 30.0,
+//                    ),
+//                  ),
+                  Expanded(
+                    child: BusRoutePage(
+                      buses: buses,
+                      startsWith: _currentNumbers.join(),
                     ),
                   ),
                 ],
-              )
+              ),
             ),
           ),
           Expanded(
-            flex: 5,
-            child: _KeypadContainer(notifyParent: refresh),
+            flex: 4,
+            child: _KeypadContainer(notifyParent: inputAction),
           ),
         ],
       ),
@@ -50,15 +105,41 @@ class _NumpadPageState extends State<NumpadPage>
   }
 }
 
-enum SlopeType {
-  vertical,
-  horizontal,
-  stepup,
-  stepdown,
+class _DisplayNumber extends StatefulWidget {
+  final List<String> displayNumber;
+
+  const _DisplayNumber({Key key, this.displayNumber}) : super(key: key);
+
+  @override
+  _DisplayNumberState createState() => new _DisplayNumberState();
+}
+
+class _DisplayNumberState extends State<_DisplayNumber> {
+  @override
+  Widget build(BuildContext context) {
+    String displayText = this.widget.displayNumber.join();
+    if(displayText.isEmpty){
+      displayText = "Enter Route!";
+    }
+    return Container(
+      color: Theme.of(context).accentColor,
+      child: SizedBox(
+        width: double.infinity,
+        child: Center(
+          child: Text(
+            displayText,
+            style: new TextStyle(
+              fontSize: 30.0,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _KeypadContainer extends StatefulWidget {
-  final Function(String a) notifyParent;
+  final Function(InputType inputType, [List<String> inputNumbers]) notifyParent;
 
   const _KeypadContainer({Key key, this.notifyParent}) : super(key: key);
 
@@ -113,7 +194,7 @@ class _KeypadContainerState extends State<_KeypadContainer> {
   }
 
   _checkOverlappedKeypad(localPosition) {
-    String hitOnKey = null;
+    String hitOnKey;
     keys.forEach((key, value) {
       RenderBox renderBox = value.currentContext.findRenderObject();
 
@@ -130,7 +211,20 @@ class _KeypadContainerState extends State<_KeypadContainer> {
   _onPanEnd(DragEndDetails details) {
     setState(() {
       _landOn = _storedNumber[_storedNumber.length - 1];
-      if (_confirmedNumber[_confirmedNumber.length - 1] != _landOn && _landOn != null) {
+
+      bool _checkIfLastStoredNumberIsValid() {
+        // No need check
+        if(_confirmedNumber.length == 0){
+          return true;
+        }
+        if(_confirmedNumber[_confirmedNumber.length - 1] != _landOn){
+          return true;
+        }
+        return false;
+      }
+      if (_checkIfLastStoredNumberIsValid() &&
+          _landOn != null &&
+          _isDigit(_landOn, 0)) {
         _confirmedNumber.add(_landOn);
       }
 
@@ -138,7 +232,7 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
       String debugText = _confirmedNumber.toString();
 
-      widget.notifyParent(debugText);
+      widget.notifyParent(InputType.SWIPE, _confirmedNumber);
 
       // Calculate bus route end
 
@@ -187,15 +281,6 @@ class _KeypadContainerState extends State<_KeypadContainer> {
       return 6;
     }
     return 7;
-//
-//    if(slope > 2 || slope > -2){
-//      return SlopeType.vertical;
-//    } else if (slope < 0.5 && slope > -0.5 ){
-//      return SlopeType.horizontal;
-//    } else if (slope > 0){
-//      return SlopeType.stepup;
-//    }
-//    return SlopeType.stepdown;
   }
 
   bool _calculateIfHaveTurn(int a, int b) {
@@ -228,6 +313,23 @@ class _KeypadContainerState extends State<_KeypadContainer> {
     }
     return false;
   }
+  bool _isDigit(String s, int idx) => (s.codeUnitAt(idx) ^ 0x30) <= 9;
+
+  _onTapUp(TapUpDetails details) {
+    Offset localPosition = details.globalPosition;
+
+    String hitOnKey = _checkOverlappedKeypad(localPosition);
+    switch(hitOnKey){
+      case 'C':
+        widget.notifyParent(InputType.CLEAR);
+        break;
+      case '<':
+        widget.notifyParent(InputType.BACK);
+        break;
+      default:
+        widget.notifyParent(InputType.TAP, [hitOnKey]);
+    }
+  }
 
   _onPanUpdate(DragUpdateDetails details) {
     setState(() {
@@ -253,7 +355,7 @@ class _KeypadContainerState extends State<_KeypadContainer> {
       _storedFingerLocation.add(localPosition);
       _storedNumber.add(hitOnKey);
 
-      if (_storedIndex == 1) {
+      if (_storedIndex == 1 && _isDigit(hitOnKey, 0)) {
         _confirmedNumber.add(hitOnKey);
       }
       int slopeRefPoint1 = _storedIndex - 5;
@@ -282,15 +384,19 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                 _storedFingerLocation[directionRefPoint2]) ||
             _calculateIfHaveTurn(currentSlopeType, previousSlopeType);
 
+
+
         // Add number only when
         // 1. List is not empty
         // 2. the number is not in the last index of the list
         // 3. number is not null
+        // 4. And number is digit
         if (isCaptureNumber) {
           _landOn = _storedNumber[slopeRefPoint2];
           if ((_confirmedNumber.length <= 0 ||
-              _confirmedNumber[_confirmedNumber.length - 1] != _landOn) &&
-              _landOn != null) {
+                  _confirmedNumber[_confirmedNumber.length - 1] != _landOn) &&
+              _landOn != null &&
+              _isDigit(_landOn,0)) {
             _confirmedNumber.add(_landOn);
           }
         }
@@ -323,7 +429,8 @@ class _KeypadContainerState extends State<_KeypadContainer> {
       _drawingPoints = new List.from(_drawingPoints)..add(_localPosition);
 
       ///////// Debug text /////////////////
-      widget.notifyParent(debugText);
+      // widget.notifyParent(debugText);
+      widget.notifyParent(InputType.SWIPE, _confirmedNumber);
     });
   }
 
@@ -353,6 +460,7 @@ class _KeypadContainerState extends State<_KeypadContainer> {
           flex: 6,
           child: GestureDetector(
             onPanUpdate: _onPanUpdate,
+            onTapUp: _onTapUp,
             onPanEnd: _onPanEnd,
             child: Stack(
               children: <Widget>[
@@ -405,7 +513,7 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                   ),
                 ),
                 new CustomPaint(
-                  painter: new Signature(points: _drawingPoints),
+                  painter: new NumpadGesturePainter(points: _drawingPoints),
                   size: Size.infinite,
                 ),
               ],
@@ -437,30 +545,6 @@ class _KeypadContainerState extends State<_KeypadContainer> {
           flex: 2,
         ),
       ],
-    );
-  }
-}
-
-class NumberWithKey extends StatelessWidget {
-  NumberWithKey(this.num, this.key1);
-
-  final String num;
-
-  GlobalKey key1 = new GlobalKey();
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: FittedBox(
-        child: Container(
-          key: key1,
-          decoration: new BoxDecoration(
-              borderRadius: new BorderRadius.all(const Radius.circular(5))),
-          child: FittedBox(
-            child: Text(num),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -536,50 +620,4 @@ class _NumberState extends State<Number> {
       ),
     );
   }
-}
-
-class Signature extends CustomPainter {
-  List<Offset> points;
-
-  Signature({this.points});
-
-  Rect rect = new Rect.fromCircle(
-    center: new Offset(100.0, 100.0),
-    radius: 180.0,
-  );
-  final Gradient gradient = new RadialGradient(
-    colors: <Color>[
-      Colors.yellow.withOpacity(0.3),
-      Colors.yellow.withOpacity(0.3),
-      Colors.green.withOpacity(0.3),
-      Colors.green.withOpacity(0.3),
-      Colors.blue.withOpacity(0.3),
-    ],
-    stops: [
-      0.0,
-      0.5,
-      0.7,
-      0.9,
-      1.0,
-    ],
-  );
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = new Paint()
-      //..color = Colors.yellowAccent[100].withOpacity(0.5)
-      ..shader = gradient.createShader(rect)
-      ..strokeCap = StrokeCap.butt
-      ..strokeWidth = 5;
-
-    for (int i = 0; i < points.length - 1; i++) {
-      if (points[i] != null && points[i + 1] != null) {
-        canvas.drawLine(points[i], points[i + 1], paint);
-
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(Signature oldDelegate) => oldDelegate.points != points;
 }

@@ -17,7 +17,9 @@ class BusRoutePage extends StatefulWidget {
 
   final String region;
 
-  const BusRoutePage({Key key, this.buses, this.region}) : super(key: key);
+  final String startsWith;
+
+  const BusRoutePage({Key key, this.buses, this.region, this.startsWith}) : super(key: key);
 
   @override
   _BusRoutePageState createState() => new _BusRoutePageState();
@@ -34,7 +36,7 @@ class _BusRoutePageState extends State<BusRoutePage>
 
   @override
   Widget build(BuildContext context) {
-    final String langauge = locale.currentLanguage.toString();
+    final String language = locale.currentLanguage.toString();
 
     //final buses = fetchBuses();
     final Future<List<Bus>> buses = widget.buses;
@@ -49,24 +51,34 @@ class _BusRoutePageState extends State<BusRoutePage>
 
             for (Bus bus in snapshot.data) {
               // continue if route didn't match bus
-              if (bus.region != widget.region) {
+              if (widget.region != null
+                  && bus.region != widget.region) {
                 continue;
               }
 
-              String route_id = bus.route_id;
 
+
+              String route_number = bus.route_number;
+
+              if(widget.startsWith != null){
+                // Only shows if start with
+                if(!route_number.startsWith(widget.startsWith)){
+                  continue;
+                }
+              }
+
+              String route_id = bus.route_id;
               if (route_id == previousRouteId) {
                 routeNumCounter++;
               } else {
                 routeNumCounter = 0;
               }
-              int currentRouteNumCount = routeNumCounter;
               previousRouteId = route_id;
-              
+
               Widget listTile = BusRouteRow(
                 bus: bus,
-                currentRouteNumCount: currentRouteNumCount,
-                langauge: langauge,
+                currentRouteNumCount: routeNumCounter,
+                langauge: language,
               );
               listOfRow.add(listTile);
             }
