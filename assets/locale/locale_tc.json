@@ -1,0 +1,14 @@
+{
+  "page": {
+    "title": "我的app",
+    "changeLanguage": "Tap this button to select 'French'"
+  },
+  "pages": {
+    "settings": {
+      "title": "設定",
+      "body": {
+        "language": "Language / 語言"
+      }
+    }
+  }
+}

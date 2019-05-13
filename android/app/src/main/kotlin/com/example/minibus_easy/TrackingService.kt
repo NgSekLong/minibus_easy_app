@@ -10,6 +10,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -34,6 +35,7 @@ import com.example.minibus_easy.gpstracker.GPSTrackerConstant.FASTEST_INTERVAL
 import com.example.minibus_easy.gpstracker.GPSTrackerConstant.UPDATE_INTERVAL
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
 
 //import com.example.minibus_easy.gpstracker.LatLngTime
@@ -501,8 +503,28 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         // getAllGPSPrefForLols()
     }
     fun sentLatLngToServer(latLngTime: LatLngTime) {
-        "https://httpbin.org/get"
-        .httpGet()
+
+
+        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val wInfo = wifiManager.getConnectionInfo()
+        val macAddress = wInfo.getMacAddress()
+        /*
+        mac_address:1234
+lat:123.3
+lng:123.4
+time:1557669212
+route_id:2001
+         */
+
+        Fuel.post("http://34.92.224.245:80/submit_gps",
+            listOf(
+                "mac_address" to macAddress,
+                "route_id" to "2001",
+                "lat" to latLngTime.lat,
+                "lng" to latLngTime.lng,
+                "time" to latLngTime.time
+            )
+        )
         .responseString { request, response, result ->
             when (result) {
                 is Result.Failure -> {
@@ -513,6 +535,33 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
                 }
             }
         }
+
+
+//        "https://httpbin.org/get"
+//            .httpPost()
+//            .responseString { request, response, result ->
+//                when (result) {
+//                    is Result.Failure -> {
+//                        val ex = result.getException()
+//                    }
+//                    is Result.Success -> {
+//                        val data = result.get()
+//                    }
+//                }
+//            }
+
+//        "https://httpbin.org/get"
+//        .httpPost()
+//        .responseString { request, response, result ->
+//            when (result) {
+//                is Result.Failure -> {
+//                    val ex = result.getException()
+//                }
+//                is Result.Success -> {
+//                    val data = result.get()
+//                }
+//            }
+//        }
     }
 
 //    fun resetGpsPref(){
