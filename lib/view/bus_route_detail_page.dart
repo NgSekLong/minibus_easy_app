@@ -28,9 +28,26 @@ class BusRouteDetailPage extends StatefulWidget {
 class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
   Future<List<RouteDetail>> routeDetail;
   Future<List<Bus>> post;
+  Timer timer;
+
+  Map<int, String> _listTextMap = {};
 
   //BusRoutePage({Key key, this.post}) : super(key: key);
 
+  @override
+  void initState() {
+    super.initState();
+    timer = Timer.periodic(Duration(seconds: 3), (Timer t) => fetchRouteListDetailAgain());
+  }
+
+  void fetchRouteListDetailAgain(){
+    setState(() {
+
+
+      RouteInfoFetcher routeInfoFetcher = RouteInfoFetcher();
+      routeDetail = routeInfoFetcher.fetchRouteDetail(widget.route_id, widget.route_num_counter);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +55,7 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
     RouteInfoFetcher routeInfoFetcher = RouteInfoFetcher();
 
     final String langauge = locale.currentLanguage.toString();
-    final routeDetail = routeInfoFetcher.fetchRouteDetail(widget.route_id, widget.route_num_counter);
+    routeDetail = routeInfoFetcher.fetchRouteDetail(widget.route_id, widget.route_num_counter);
     return Scaffold(
 //      appBar: AppBar(
 //        //leading: new Icon(Icons.android),
@@ -75,9 +92,20 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
                       demoText += "'${stop_name_tc}'";
                     } else {
                       demoText += "'${stop_name_en}'";
-
                     }
-                    demoText += "\n Estimated time to here from 1: > ${totalDurationInString}";
+                    demoText += "\n";
+                    if(routeDetail.arrival_times.length > 0){
+                      routeDetail.arrival_times.forEach((arrivalTime) {
+                        String arrivalTimeInString = new Duration(seconds: arrivalTime).toString().split(".")[0];
+                        demoText += "${arrivalTimeInString} | ";
+                      });
+                    } else {
+                      demoText += "Estimated time to here from 1: > ${totalDurationInString}";
+                    }
+
+                    //setState(() {
+                      _listTextMap[i] = demoText;
+                    //});
 
                     ListTile listTile = new ListTile(
                       title: Row(children: <Widget>[
@@ -91,7 +119,7 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
                         ),
                         Expanded(
                           flex: 9,
-                          child: Text(demoText),
+                          child: Text(_listTextMap[i]),
                         ),
 
                       ]
@@ -138,5 +166,11 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
           )
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 }

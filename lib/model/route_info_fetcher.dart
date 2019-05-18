@@ -75,6 +75,9 @@ class RouteInfoFetcher {
       saveRouteDetailToSharedPreference(fetchRouteDetails, route_id,  route_num_counter);
     }
 
+    // TEMP: always fetch from network for now:
+    fetchRouteDetails = await fetchRouteDetailFromServer( route_id,  route_num_counter);
+
     return fetchRouteDetails;
   }
 

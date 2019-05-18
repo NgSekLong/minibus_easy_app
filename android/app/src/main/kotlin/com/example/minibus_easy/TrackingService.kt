@@ -108,6 +108,7 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
      * Save GPS Pref
      */
     private val SAVE_GPS_PREF = "SAVE_GPS_PREF"
+    private val DRIVER_ROUTE_ID_PREF = "DRIVER_ROUTE_ID_PREF"
     private val SHARED_PREFERENCES_NAME = "FlutterSharedPreferences"
     private val SHARED_PREFERENCES_PREFIX = "flutter."
 
@@ -516,10 +517,18 @@ time:1557669212
 route_id:2001
          */
 
-        Fuel.post("http://34.92.224.245:80/submit_gps",
+        val prefs = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+        var driverRouteIdPref = prefs.getString("$SHARED_PREFERENCES_PREFIX$DRIVER_ROUTE_ID_PREF", null)
+        if(driverRouteIdPref.isNullOrEmpty()){
+            // No route_id specified, skiped
+            return
+        }
+
+
+        Fuel.post("http://35.229.213.37:80/submit_gps",
             listOf(
                 "mac_address" to macAddress,
-                "route_id" to "2001",
+                "route_id" to driverRouteIdPref,
                 "lat" to latLngTime.lat,
                 "lng" to latLngTime.lng,
                 "time" to latLngTime.time

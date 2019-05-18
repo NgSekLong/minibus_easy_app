@@ -31,7 +31,7 @@ class MapSample extends StatefulWidget {
 
 class MapSampleState extends State<MapSample> {
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
-  Polyline polyline;
+  Polyline polyline = Polyline(polylineId: PolylineId("placeholder"));
   //Map<PolylineId, Polyline> polylines = <PolylineId, Polyline>{};
 
   Completer<GoogleMapController> _controller = Completer();

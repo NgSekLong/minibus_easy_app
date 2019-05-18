@@ -16,9 +16,11 @@ class RouteDetail {
 
   final LatLng latlng;
 
+  final List<int> arrival_times;
+
   // final LatLng latlng;
 
-  RouteDetail({this.stop_name_en, this.stop_name_tc, this.duration_sec, this.latlng});
+  RouteDetail({this.stop_name_en, this.stop_name_tc, this.duration_sec, this.latlng, this.arrival_times});
 
   //factory Post.fromJson(Map<String, dynamic> json) {
   static List<RouteDetail> fromJson(List<dynamic> jsons) {
@@ -40,11 +42,23 @@ class RouteDetail {
          latlng = LatLng(latlngInput['lat'], latlngInput['lng']);
       }
 
+      List<int> arrivalTimes = List<int>();
+      if(json.containsKey('arrival_times')){
+        final List<dynamic> arrivalTimesInput = json['arrival_times'];
+
+        arrivalTimes = new List<int>.from(arrivalTimesInput);
+
+        // latlng = LatLng(latlngInput['lat'], latlngInput['lng']);
+      }
+
+
+
       RouteDetail routeDetail =  RouteDetail(
         stop_name_en : json['stop_name_en'],
         stop_name_tc : json['stop_name_tc'],
         duration_sec : duration_sec,
         latlng: latlng,
+        arrival_times : arrivalTimes,
       );
       listOfRouteDetail.add(routeDetail);
     }
@@ -71,7 +85,7 @@ class RouteDetail {
         "stop_name_en" : routeDetail.stop_name_en,
         "stop_name_tc" : routeDetail.stop_name_tc,
         "duration_sec" : routeDetail.duration_sec.toString(),
-        "latlng" : latlng
+        "latlng" : latlng,
       };
       listJson.add(json);
     }

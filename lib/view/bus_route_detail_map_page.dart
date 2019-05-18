@@ -32,7 +32,8 @@ class BusRouteDetailMapPage extends StatefulWidget {
 
 class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
-  Polyline polyline;
+  Polyline polyline = Polyline(polylineId: PolylineId("placeholder"));
+
   //Map<PolylineId, Polyline> polylines = <PolylineId, Polyline>{};
 
   Completer<GoogleMapController> _controller = Completer();
@@ -200,16 +201,16 @@ class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
         markers: Set<Marker>.of(markers.values),
         polylines: Set<Polyline>.of([polyline]),
       ),
-//      floatingActionButton: FloatingActionButton.extended(
-//        onPressed: _goToTheLake,
-//        label: Text('To the lake!'),
-//        icon: Icon(Icons.directions_boat),
-//      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _goToTheLake,
+        label: Text('I am driving this Route!'),
+        icon: Icon(Icons.directions_boat),
+      ),
     );
   }
 
-//  Future<void> _goToTheLake() async {
-//    final GoogleMapController controller = await _controller.future;
-//    controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
-//  }
+  Future<void> _goToTheLake() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString(DRIVER_ROUTE_ID_PREF, widget.route_id);
+  }
 }
