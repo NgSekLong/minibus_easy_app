@@ -56,7 +56,7 @@ class DetectedActivitiesIntentService : IntentService(TAG) {
     }
 
     companion object {
-
+        // Use the TAG to name the worker thread.
         protected val TAG = "DetectedActivitiesIS"
     }
-}// Use the TAG to name the worker thread.
+}

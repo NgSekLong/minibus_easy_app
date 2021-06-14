@@ -45,7 +45,6 @@ import com.google.android.gms.location.*
 import org.json.JSONArray
 import java.text.SimpleDateFormat
 
-//
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -74,8 +73,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
 
     private var gpsTrackerText = ""
 
-
-
     /**
      * Variables for GPS tracking
      */
@@ -98,8 +95,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
      */
     private val FLUTTER_PERMISSION_LIBRARY_CODE = 25
 
-    // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
-    // requestActivityUpdates() and removeActivityUpdates().
     /**
      * Gets a PendingIntent to be sent for each activity detection.
      */
@@ -128,19 +123,10 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         super.onCreate()
         mContext = this
 
-        // Detected Activities
-//        val detectedActivities = DetectedActivitiesUtils.detectedActivitiesFromJson(
-//                PreferenceManager.getDefaultSharedPreferences(this).getString(
-//                        DetectedActivitiesConstants.KEY_DETECTED_ACTIVITIES, ""))
-
-
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this)
         mActivityRecognitionClient = ActivityRecognitionClient(this)
         requestActivityUpdatesButtonHandler()
-
-
-
 
         // GPS Tracker logic
         mGoogleApiClient = GoogleApiClient.Builder(this)
@@ -157,7 +143,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
                 .setInterval(UPDATE_INTERVAL)
                 .setFastestInterval(FASTEST_INTERVAL)
 
-
     }
 
     override fun onDestroy() {
@@ -165,7 +150,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
                 .unregisterOnSharedPreferenceChangeListener(this)
 
         // GPS Tracker
-
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect()
         }
@@ -174,7 +158,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
-        //
         mGoogleApiClient.connect()
         return START_NOT_STICKY
     }
@@ -188,10 +171,7 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
     private fun createNotificationForGPSTracker(gpsString: String){
         gpsTrackerText = gpsString
         createNotification()
-
     }
-
-
 
     private fun createNotification() {
 
@@ -202,7 +182,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         val bigText = detectedActivitiesLongText
 
 
-        // String input = intent.getStringExtra("inputExtra");
         if (notificationFirstTime) {
             val notificationIntent = Intent(this, MainActivity::class.java)
             val pendingIntent = PendingIntent.getActivity(this,
@@ -284,7 +263,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
 
     internal fun updateActivities(detectedActivities: ArrayList<DetectedActivity>) {
         // Find the most sensitive activity:
-
         var chosenActivity: DetectedActivity? = null
 
         for (i in detectedActivities.indices) {
@@ -305,24 +283,8 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         createNotificationForDetectedActivities(chosenString, activitiesString)
     }
 
-    ////////////////////////GPS//////////////////////////////
-
-
+    // GPS 
     override fun onConnected(bundle: Bundle?) {
-
-//        if (ActivityCompat.checkSelfPermission(this,
-//                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
                 mLocationRequest, this)
         //startLocationUpdates()
@@ -335,13 +297,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-        // GPS Tracker
-//        if(mGoogleApiClient == null){
-//            buildGoogleApiClient()
-//            mGoogleApiClient.connect()
-//        }
-
-        //mGoogleApiClient.connect()
         mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
         if (mLocation == null) {
             startLocationUpdates()
@@ -391,17 +346,12 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
 
 
 
-    /**
-     * TODO: make this work.....
-     */
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if(requestCode == FLUTTER_PERMISSION_LIBRARY_CODE) {
             startLocationUpdates()
             Toast.makeText(mContext, "Permission Granted!", Toast.LENGTH_SHORT).show()
-            //return true
         } else {
             Toast.makeText(mContext, "Permission Denied!", Toast.LENGTH_SHORT).show()
-            //return false
         }
 
     }
@@ -412,25 +362,9 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(UPDATE_INTERVAL)
                 .setFastestInterval(FASTEST_INTERVAL)
-        // Request location updates
-        if (ActivityCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
                 mLocationRequest, this)
 
-        //LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
         Log.d("reque", "--->>>>")
     }
 
@@ -444,16 +378,11 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
     }
 
     override fun onLocationChanged(location: Location) {
-
-//        val msg = "Updated Location: " +
-//                java.lang.Double.toString(location.latitude) + "," +
-//                java.lang.Double.toString(location.longitude)
         val latitude = location.latitude.toString()
         val longitude = location.longitude.toString()
         val gpsText = "[GPS: $latitude, $longitude]"
         saveGpsPref(latitude, longitude)
         createNotificationForGPSTracker(gpsText)
-        // Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
 
@@ -488,20 +417,10 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
 
         val jsonData = Json.stringify(LatLngTime.serializer().list, latlngArray)
 
-//
-        // val jsonData = Json.stringify(Map<String,String>.serializer().list, latlngArray)
-//
-//
-//
-//        if (restoredText != null) {
-//            val name = prefs.getString("name", "No name defined")//"No name defined" is the default value.
-//            val idName = prefs.getInt("idName", 0) //0 is the default value.
-//        }
 
         val editor = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
         editor.putString("$SHARED_PREFERENCES_PREFIX$SAVE_GPS_PREF", jsonData)
         editor.apply()
-        // getAllGPSPrefForLols()
     }
     fun sentLatLngToServer(latLngTime: LatLngTime) {
 
@@ -509,13 +428,6 @@ class TrackingService : Service(), SharedPreferences.OnSharedPreferenceChangeLis
         val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val wInfo = wifiManager.getConnectionInfo()
         val macAddress = wInfo.getMacAddress()
-        /*
-        mac_address:1234
-lat:123.3
-lng:123.4
-time:1557669212
-route_id:2001
-         */
 
         val prefs = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
         var driverRouteIdPref = prefs.getString("$SHARED_PREFERENCES_PREFIX$DRIVER_ROUTE_ID_PREF", null)
@@ -525,7 +437,7 @@ route_id:2001
         }
 
 
-        Fuel.post("http://35.229.213.37:80/submit_gps",
+        Fuel.post("!!INSERT_BACKEND_SERVER_URL!!/submit_gps",
             listOf(
                 "mac_address" to macAddress,
                 "route_id" to driverRouteIdPref,
@@ -545,38 +457,6 @@ route_id:2001
             }
         }
 
-
-//        "https://httpbin.org/get"
-//            .httpPost()
-//            .responseString { request, response, result ->
-//                when (result) {
-//                    is Result.Failure -> {
-//                        val ex = result.getException()
-//                    }
-//                    is Result.Success -> {
-//                        val data = result.get()
-//                    }
-//                }
-//            }
-
-//        "https://httpbin.org/get"
-//        .httpPost()
-//        .responseString { request, response, result ->
-//            when (result) {
-//                is Result.Failure -> {
-//                    val ex = result.getException()
-//                }
-//                is Result.Success -> {
-//                    val data = result.get()
-//                }
-//            }
-//        }
     }
-
-//    fun resetGpsPref(){
-//        val editor = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
-//        editor.putString(SAVE_GPS_PREF, "[]")
-//        editor.apply()
-//    }
 
 }

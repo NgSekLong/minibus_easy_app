@@ -25,7 +25,6 @@ class MainActivity: FlutterActivity() {
 
     fun startService() {
         val serviceIntent = Intent(this, TrackingService::class.java)
-        //serviceIntent.putExtra(TrackingService.INTENT_EXTRA, "Something")
 
         startService(serviceIntent)
     }
