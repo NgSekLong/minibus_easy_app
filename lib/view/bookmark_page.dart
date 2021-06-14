@@ -7,10 +7,7 @@ import 'package:minibus_easy/view/bus_route_detail_navigation.dart';
 import 'package:minibus_easy/model/bus.dart';
 import 'package:minibus_easy/passenger_layout.dart';
 
-
-
 class BookmarkPage extends StatelessWidget {
-
 
   @override
   Widget build(BuildContext context) {

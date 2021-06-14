@@ -38,7 +38,6 @@ class _BusRoutePageState extends State<BusRoutePage>
   Widget build(BuildContext context) {
     final String language = locale.currentLanguage.toString();
 
-    //final buses = fetchBuses();
     final Future<List<Bus>> buses = widget.buses;
     return Center(
       child: FutureBuilder<List<Bus>>(

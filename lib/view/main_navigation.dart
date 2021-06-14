@@ -111,37 +111,3 @@ class MainNavigationState extends State<MainNavigation>
     );
   }
 }
-
-//Material(
-//// set the color of the bottom navigation bar
-//color: Color(0xFFecd98b),
-//
-//// set the tab bar as the child of bottom navigation bar
-//child: TabBar(
-//tabs: <Tab>[
-//Tab(
-//icon: Icon(Icons.confirmation_number),
-//text: 'Numpad',
-//),
-//Tab(
-//// set icon to the tab
-//icon: Icon(Icons.location_on),
-//text: 'Map',
-//),
-//Tab(
-//icon: Icon(Icons.line_weight),
-//text: 'Route List',
-//),
-//Tab(
-//icon: Icon(Icons.bookmark_border),
-//text: 'Bookmark',
-//),
-//Tab(
-//icon: Icon(Icons.new_releases),
-//text: 'Testing',
-//),
-//],
-//// setup the controller
-//controller: controller,
-//),
-//),

@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 
+/// Class representing a combination of Latitude, Longtitude and time use for displaying bus stop
 class LatLngTime {
   final String lat;
   final String lng;
@@ -8,9 +9,7 @@ class LatLngTime {
 
   LatLngTime({this.lat, this.lng, this.time});
 
-  //factory Post.fromJson(Map<String, dynamic> json) {
   static List<LatLngTime> fromJson(List<dynamic> jsons) {
-    //Map<String, dynamic> json = jsons[0];
     List<LatLngTime> listOfRouteDetail = new List();
 
     for(Map<String, dynamic> json in jsons){

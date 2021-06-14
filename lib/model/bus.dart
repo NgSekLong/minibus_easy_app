@@ -1,10 +1,8 @@
 
 import 'dart:convert';
 
+/// Class to represent a Bus
 class Bus {
-
-
-
   final String route_id;
   final String route_number;
   final String region;
@@ -15,9 +13,7 @@ class Bus {
 
   Bus({this.route_id, this.route_number, this.region, this.route_start_at_en, this.route_start_at_tc, this.route_end_at_en, this.route_end_at_tc});
 
-  //factory Post.fromJson(Map<String, dynamic> json) {
   static List<Bus> fromJson(List<dynamic> jsons) {
-    //Map<String, dynamic> json = jsons[0];
     List<Bus> listOfPost = new List();
 
     for(Map<String, dynamic> json in jsons){
@@ -33,8 +29,6 @@ class Bus {
       );
       listOfPost.add(bus);
     }
-
-
 
     return listOfPost;
   }
@@ -54,6 +48,5 @@ class Bus {
        listJson.add(json);
     }
     return json.encode(listJson);
-
   }
 }

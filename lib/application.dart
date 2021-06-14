@@ -11,7 +11,7 @@ import 'dart:async';
 ///
 /// This Application provide two purpose:
 /// 1. Load the translation library
-/// 2. Asked for GPS. TODO: Evaluate if need to asked for GPS at this stage
+/// 2. Asked for GPS. 
 ///
 class Application extends StatefulWidget {
   @override
@@ -37,8 +37,6 @@ class ApplicationState extends State<Application> {
   Widget build(BuildContext context) {
     // GPS Permission
     PermissionHandler().requestPermissions([PermissionGroup.location]);
-
-
 
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -66,9 +64,6 @@ class ApplicationState extends State<Application> {
                 buttonTheme: ButtonThemeData(
                   buttonColor: Color(0xFFecd98b), 
                 ),
-
-
-
 
                 // Define the default Font Family
                 fontFamily: 'Montserrat',

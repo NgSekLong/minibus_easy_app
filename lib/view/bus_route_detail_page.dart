@@ -20,9 +20,6 @@ class BusRouteDetailPage extends StatefulWidget {
 
   @override
   _BusRouteDetailPageState createState() => new _BusRouteDetailPageState();
-
-//  @override
-//  _BusRouteDetailPageState createState() => new _BusRouteDetailPageState();
 }
 
 class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
@@ -32,8 +29,6 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
 
   Map<int, String> _listTextMap = {};
 
-  //BusRoutePage({Key key, this.post}) : super(key: key);
-
   @override
   void initState() {
     super.initState();
@@ -42,8 +37,6 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
 
   void fetchRouteListDetailAgain(){
     setState(() {
-
-
       RouteInfoFetcher routeInfoFetcher = RouteInfoFetcher();
       routeDetail = routeInfoFetcher.fetchRouteDetail(widget.route_id, widget.route_num_counter);
     });
@@ -57,15 +50,6 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
     final String langauge = locale.currentLanguage.toString();
     routeDetail = routeInfoFetcher.fetchRouteDetail(widget.route_id, widget.route_num_counter);
     return Scaffold(
-//      appBar: AppBar(
-//        //leading: new Icon(Icons.android),
-//        titleSpacing: 0.0,
-//        //automaticallyImplyLeading: false, // Don't show the leading button
-//        title: getTabBar(),
-//        backgroundColor: Color(0xFFe7e2dd),
-//        //bottom: getTabBar(),
-//      ),
-      //bottomNavigationBar: PassengerLayout().getBottomNavigationBar(),
       body: Center(
           child: FutureBuilder <List<RouteDetail>>(
               future: routeDetail,
@@ -84,8 +68,6 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
                     totalDuration += duration_sec;
 
                     String totalDurationInString = new Duration(seconds: totalDuration).toString().split(".")[0];
-                    //totalDurationInString = totalDurationInString.split(".")[0];
-                    // bus.route_id
 
                     String demoText = '';
                     if(langauge == 'tc'){
@@ -103,9 +85,7 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
                       demoText += "Estimated time to here from 1: > ${totalDurationInString}";
                     }
 
-                    //setState(() {
-                      _listTextMap[i] = demoText;
-                    //});
+                    _listTextMap[i] = demoText;
 
                     ListTile listTile = new ListTile(
                       title: Row(children: <Widget>[
@@ -113,27 +93,15 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
                           flex: 1,
                           child: Container(
                             child: Text(i.toString()),
-                          )
-
-                          ,
+                          ),
                         ),
                         Expanded(
                           flex: 9,
                           child: Text(_listTextMap[i]),
                         ),
 
-                      ]
-                      ),
+                      ]),
 
-
-//                    onTap: (){
-//                      print(route_id);
-//
-//                      Navigator.push(
-//                        context,
-//                        MaterialPageRoute(builder: (context) => BusRouteDetailPage(route_id: route_id)),
-//                      );
-//                    },
                     );
                     listOfRow.add(listTile);
                     i++;
@@ -148,15 +116,7 @@ class _BusRouteDetailPageState extends State<BusRouteDetailPage> {
 
                   return ListView(children: divided);
 
-
-
-
-
-
-
-
                   return Text("${snapshot.data}");
-
                 }
                 else if (snapshot.hasError) {
                   return Text("${snapshot.error}");

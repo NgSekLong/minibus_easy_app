@@ -18,7 +18,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class BusRouteDetailMapPage extends StatefulWidget {
 
-
   final String route_id;
   final int route_num_counter;
 
@@ -34,7 +33,6 @@ class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   Polyline polyline = Polyline(polylineId: PolylineId("placeholder"));
 
-  //Map<PolylineId, Polyline> polylines = <PolylineId, Polyline>{};
 
   Completer<GoogleMapController> _controller = Completer();
 
@@ -42,10 +40,7 @@ class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
     target: LatLng(22.3193, 114.1694),
     zoom: 12,
   );
-
-
-
-
+  
   Future _initMarkers() async {
     RouteInfoFetcher routeInfoFetcher = RouteInfoFetcher();
     final List<RouteDetail> routeDetailList = await routeInfoFetcher.fetchRouteDetail(widget.route_id, widget.route_num_counter);
@@ -56,20 +51,6 @@ class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
       i++;
     });
     _addLines();
-//    final SharedPreferences prefs = await SharedPreferences.getInstance();
-//
-//    // prefs.setString("SAVE_GPS_PREF", "[]");
-//
-//    String savedGps = prefs.get(SAVE_GPS_PREF);
-//    if(savedGps == null){
-//      savedGps = "[]";
-//    }
-//
-//    List<LatLngTime> latlngtimeList = LatLngTime.fromJson(json.decode(savedGps));
-//
-//    latlngtimeList.forEach((latlngtime) {
-//      _addMarker(latlngtime);
-//    });
   }
   void _addMarker(RouteDetail routeDetail, int i) {
 
@@ -81,11 +62,9 @@ class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
     String stop_name_tc = routeDetail.stop_name_tc;
     int duration_sec = routeDetail.duration_sec;
 
-    int totalDuration = duration_sec; // TODO: make actual arrival time instead of this things.
-
+    int totalDuration = duration_sec; 
+    
     String totalDurationInString = new Duration(seconds: totalDuration).toString().split(".")[0];
-    //totalDurationInString = totalDurationInString.split(".")[0];
-    // bus.route_id
 
     String stopName = '';
     if(langauge == 'tc'){
@@ -99,7 +78,7 @@ class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
 
 
 
-    var markerIdVal = 'Marker-$i'; //MyWayToGenerateId();
+    var markerIdVal = 'Marker-$i'; 
     final MarkerId markerId = MarkerId(markerIdVal);
 
     // creating a new MARKER
@@ -107,46 +86,13 @@ class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
       markerId: markerId,
       position: routeDetail.latlng,
       infoWindow: InfoWindow(title: title, snippet: totalDurationInString),
-      onTap: () {
-        // _onMarkerTapped(markerId);
-      },
     );
-
-
-
-//    var polylineIdVal = 'Polyline-$i';
-//    final PolylineId polylineId = PolylineId(polylineIdVal);
-//
-//    //markers[0].position
-//    //markers.map((marker, v) => marker.value);
-//    List<LatLng> latlngs = [];
-//    markers.forEach((id, marker) => {
-//      latlngs.add(marker.position)
-//    });
-//
-//
-////    List<LatLng> latlngs = markers.map((v) => {
-////      return v.;
-////    });
-//
-//    final Polyline newPolyline = Polyline(
-//      polylineId: polylineId,
-//      consumeTapEvents: true,
-//      color: Colors.orange,
-//      width: 5,
-//      points: latlngs,
-//      onTap: () {
-//        //_onPolylineTapped(polylineId);
-//      },
-//    );
-
+    
 
     if (this.mounted){
-
       setState(() {
         // adding a new marker to map
         markers[markerId] = marker;
-        // polyline = newPolyline;
       });
     }
   }
@@ -169,9 +115,6 @@ class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
       color: Colors.orange,
       width: 5,
       points: latlngs,
-      onTap: () {
-        //_onPolylineTapped(polylineId);
-      },
     );
 
     if (this.mounted){
@@ -180,17 +123,15 @@ class BusRouteDetailMapPageState extends State<BusRouteDetailMapPage> {
       });
     }
   }
-
-
-
+  
   @override
   void initState() {
     super.initState();
     _initMarkers();
   }
+
   @override
   Widget build(BuildContext context) {
-
     return new Scaffold(
       body: GoogleMap(
         mapType: MapType.normal,

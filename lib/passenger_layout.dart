@@ -7,10 +7,8 @@ class PassengerLayout {
   getAppBar(BuildContext context) {
     return AppBar(
       title: Row(children: <Widget>[
-        //Text('Route List'),
         new Image.asset('assets/top_bar.jpeg', fit: BoxFit.cover),
       ]),
-      //backgroundColor: Color(0xFFecd98b),
       actions: <Widget>[
         PopupMenuButton<String>(
 
@@ -33,28 +31,6 @@ class PassengerLayout {
       ],
     );
   }
-
-//  getBottomNavigationBar() {
-//    return BottomNavigationBar(
-//      currentIndex: 1, // this will be set when a new tab is tapped
-//      //fixedColor: Colors.amber[900],
-//
-//      items: [
-//        BottomNavigationBarItem(
-//          icon: Icon(Icons.location_on),
-//          title: Text('Map'),
-//        ),
-//        BottomNavigationBarItem(
-//          icon: Icon(Icons.line_weight),
-//          title: Text('Route List'),
-//        ),
-//        BottomNavigationBarItem(
-//            icon: Icon(Icons.bookmark_border),
-//            title: Text('Bookmark')
-//        )
-//      ],
-//    );
-//  }
 
   getBottomNavigationBar(BuildContext context) {
     return new Theme(

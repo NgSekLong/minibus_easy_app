@@ -13,9 +13,6 @@ class BusRouteReferencePage extends StatefulWidget {
 }
 
 class _BusRouteReferencePageState extends State<BusRouteReferencePage> {
-  //final String route_id;
-  //BusRouteReferencePage(Key key, this.route_id) : super(key:key);
-  //_BusRouteReferencePageState({this.route_id});
   bool isVisitedUrl = false;
 
   @override
@@ -52,6 +49,7 @@ class _BusRouteReferencePageState extends State<BusRouteReferencePage> {
     try {
       var language = locale.currentLanguage.toString().toUpperCase();
       await launch(
+        // Data from Hong Kong Government API
         'http://hketransport.td.gov.hk/ris_page/get_gmb_detail.php?route_id=' +
             widget.route_id +
             '&lang=' +

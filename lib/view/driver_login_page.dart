@@ -34,7 +34,6 @@ class DriverLoginPage extends StatelessWidget {
                   ),
                   SizedBox(
                     width: double.infinity,
-                    // height: double.infinity,
                     child: new RaisedButton(
                       child: Text('Sign'),
                       onPressed: () async {
@@ -43,8 +42,6 @@ class DriverLoginPage extends StatelessWidget {
 
                         prefs.setString(CURRENT_USER_ROLE_PREF, CURRENT_USER_ROLE_PREF_DRIVER);
                         Navigator.pop(context);
-                        //Navigator.push(context, MaterialPageRoute(builder: (context) => MainNavigation()));
-
                       },
                     ),
                   ),

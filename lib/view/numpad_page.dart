@@ -18,12 +18,6 @@ class _NumpadPageState extends State<NumpadPage>
   String _debugText = '';
   List<String> _currentNumbers = [];
 
-//  refresh(String text) {
-//    setState(() {
-//      _debugText = text;
-//    });
-//  }
-
   inputAction(InputType inputType, [List<String> inputNumbers ]) {
     setState(() {
       switch (inputType) {
@@ -48,43 +42,17 @@ class _NumpadPageState extends State<NumpadPage>
   Widget build(BuildContext context) {
     RouteInfoFetcher routeInfoFetcher = RouteInfoFetcher();
     final Future<List<Bus>> buses = routeInfoFetcher.fetchBuses();
-//    return Scaffold(
-//      body: Container(
-//        child: SizedBox(
-//          width: double.infinity,
-//          height: double.infinity,
-//          child: Column(
-//            children: <Widget>[
-//              Expanded(
-//                child: BusRoutePage(buses: buses, region: 'Hong Kong Island'),
-//              )
-//            ],
-//          ),
-//        ),
-//      ),
-//    );
-//    return BusRoutePage(buses: buses, region: 'Hong Kong Island');
     return new Scaffold(
-      //appBar: PassengerLayout().getAppBar(),
-      //bottomNavigationBar: PassengerLayout().getBottomNavigationBar(),
       body: Column(
         children: [
           Expanded(
             flex: 3,
             child: Container(
-              //color: Colors.green,
               child: Column(
                 children: <Widget>[
                   _DisplayNumber(
                     displayNumber: _currentNumbers,
                   ),
-
-//                  Text(
-//                    _debugText,
-//                    style: new TextStyle(
-//                      fontSize: 30.0,
-//                    ),
-//                  ),
                   Expanded(
                     child: BusRoutePage(
                       buses: buses,
@@ -303,12 +271,10 @@ class _KeypadContainerState extends State<_KeypadContainer> {
     if (x1.sign != x2.sign &&
         x1.abs() > _dirThreshold &&
         x2.abs() > _dirThreshold) {
-      //print('x over!');
       return true;
     } else if (y1.sign != y2.sign &&
         y1.abs() > _dirThreshold &&
         y2.abs() > _dirThreshold) {
-      //print('y over!');
       return true;
     }
     return false;
@@ -333,7 +299,7 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
   _onPanUpdate(DragUpdateDetails details) {
     setState(() {
-      //////// Keypad /////////////////
+      // Keypad
       Offset localPosition = details.globalPosition;
       String debugText = "";
       String _position = "\nCoordinate: " +
@@ -350,7 +316,7 @@ class _KeypadContainerState extends State<_KeypadContainer> {
 
       debugText += _position;
 
-      //////////// Recognizing point ////////////////////
+      // Recognizing point
       _storedIndex++;
       _storedFingerLocation.add(localPosition);
       _storedNumber.add(hitOnKey);
@@ -400,11 +366,6 @@ class _KeypadContainerState extends State<_KeypadContainer> {
             _confirmedNumber.add(_landOn);
           }
         }
-        //peaceful = true;
-
-//        debugText += '\n Current Slope' + currentSlope.toString();
-//        debugText += '\n Previous Slope ' + previousSlope.toString();
-        //debugText += '\n Slope change detector: ' + slopeChangeDetector.toString();
 
         debugText += '\nSlope type ' +
             currentSlopeType.toString() +
@@ -415,21 +376,13 @@ class _KeypadContainerState extends State<_KeypadContainer> {
         debugText += '\nGetting data';
       }
 
-//      _storedFingerLocation;
-//
-//      _storedNumber.add(hitOnKeys)
-//      if(_storedIndex > 0){
-//        peaceful = true;
-//      }
-
-      //////////// Painter /////////////////
+      // Painter
 
       RenderBox object = context.findRenderObject();
       Offset _localPosition = object.globalToLocal(details.globalPosition);
       _drawingPoints = new List.from(_drawingPoints)..add(_localPosition);
 
-      ///////// Debug text /////////////////
-      // widget.notifyParent(debugText);
+      // Debug text
       widget.notifyParent(InputType.SWIPE, _confirmedNumber);
     });
   }
@@ -441,7 +394,6 @@ class _KeypadContainerState extends State<_KeypadContainer> {
     listOfKeys.forEach((numberElement) {
       GlobalKey newKey = new GlobalKey();
       keys.putIfAbsent(numberElement, () => newKey);
-      // Number newNumber = new Number(numberElement, newKey, addToKeyList);
       Number newNumber = new Number(key: newKey, text: numberElement);
       numberElements.putIfAbsent(numberElement, () => newNumber);
     });
@@ -453,9 +405,6 @@ class _KeypadContainerState extends State<_KeypadContainer> {
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
-//          Expanded(
-//            child: ,
-//          )
         Expanded(
           flex: 6,
           child: GestureDetector(
@@ -469,7 +418,6 @@ class _KeypadContainerState extends State<_KeypadContainer> {
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
 
-//              mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
                       Flexible(
                           child: SizedBox(
@@ -559,16 +507,13 @@ class SpecialNumber extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      //color: Colors.green,
       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       child: SizedBox(
         width: double.infinity,
         child: FittedBox(
-          //fit: BoxFit.fill,
           child: Container(
             decoration: new BoxDecoration(
                 color: Colors.white,
-                //border: new Border.all(color: Colors.blueAccent),
                 borderRadius: new BorderRadius.all(const Radius.circular(2))),
             padding: EdgeInsets.symmetric(horizontal: 5),
             child: FittedBox(
@@ -600,10 +545,8 @@ class _NumberState extends State<Number> {
 
   @override
   Widget build(BuildContext context) {
-    //addToKeyList(num, thiskey);
     return Flexible(
       child: Container(
-        //: thiskey2,
         color: Colors.white,
         margin: EdgeInsets.all(8),
         child: SizedBox(

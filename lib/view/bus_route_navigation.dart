@@ -10,18 +10,6 @@ import 'package:minibus_easy/model/bus.dart';
 import 'package:minibus_easy/passenger_layout.dart';
 import 'package:minibus_easy/view/bus_route_page.dart';
 
-//Future<List<Bus>> fetchBuses() async {
-//  final response = await http.post('$BACKEND_SERVER_URL/list_bueses');
-//
-//  if (response.statusCode == 200) {
-//    // If the call to the server was successful, parse the JSON
-//    List<Bus> post = Bus.fromJson(json.decode(response.body));
-//    return post;
-//  } else {
-//    // If that call was not successful, throw an error.
-//    throw Exception('Failed to load post');
-//  }
-//}
 
 class BusRouteNavigation extends StatefulWidget {
   @override
@@ -31,8 +19,6 @@ class BusRouteNavigation extends StatefulWidget {
 class _BusRouteNavigationState extends State<BusRouteNavigation>
     with SingleTickerProviderStateMixin {
   Future<List<Bus>> post;
-
-  //BusRoutePage({Key key, this.post}) : super(key: key);
 
   TabController controller;
 
@@ -51,31 +37,11 @@ class _BusRouteNavigationState extends State<BusRouteNavigation>
     super.dispose();
   }
 
-//  TabBar getTabBar() {
-//    return new TabBar(
-//      tabs: <Tab>[
-//        new Tab(
-//          text: 'HK ISLAND',
-//        ),
-//        new Tab(
-//          text: 'KOWLOON',
-//        ),
-//        new Tab(
-//          text: 'NEW TERRITORIES',
-//        ),
-//      ],
-//      // setup the controller
-//      controller: controller,
-//    );
-//  }
-
   Container getTabBar() {
     return Container(
         child: Material(
       color: Theme.of(context).bottomAppBarColor,
       child: new TabBar(
-        //labelColor: Colors.black,
-        //indicatorColor: Colors.black,
         tabs: <Tab>[
           new Tab(
             text: 'HK ISLAND',
@@ -105,19 +71,14 @@ class _BusRouteNavigationState extends State<BusRouteNavigation>
   @override
   Widget build(BuildContext context) {
     RouteInfoFetcher routeInfoFetcher = RouteInfoFetcher();
-    // final Future<List<Bus>> buses = fetchBuses();
     final Future<List<Bus>> buses = routeInfoFetcher.fetchBuses();
     return Scaffold(
 
         appBar: AppBar(
-          //leading: new Icon(Icons.android),
           titleSpacing: 0.0,
-          //automaticallyImplyLeading: false, // Don't show the leading button
           title: getTabBar(),
           backgroundColor: Color(0xFFe7e2dd),
-          //bottom: getTabBar(),
         ),
-        //bottomNavigationBar: PassengerLayout().getBottomNavigationBar(),
         body: getTabBarView(<Widget>[
           BusRoutePage(buses: buses, region: 'Hong Kong Island'),
           BusRoutePage(buses: buses, region: 'Kowloon'),

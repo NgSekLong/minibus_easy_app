@@ -4,27 +4,17 @@ import 'dart:convert';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+/// Class representing detail of route like arrival time and lat lng
 class RouteDetail {
-
-
-
   final String stop_name_en;
   final String stop_name_tc;
   final int duration_sec;
-
-  // final LinkedHashMap<String, dynamic> latlng;
-
   final LatLng latlng;
-
   final List<int> arrival_times;
-
-  // final LatLng latlng;
 
   RouteDetail({this.stop_name_en, this.stop_name_tc, this.duration_sec, this.latlng, this.arrival_times});
 
-  //factory Post.fromJson(Map<String, dynamic> json) {
   static List<RouteDetail> fromJson(List<dynamic> jsons) {
-    //Map<String, dynamic> json = jsons[0];
     List<RouteDetail> listOfRouteDetail = new List();
 
     for(Map<String, dynamic> json in jsons){
@@ -48,11 +38,8 @@ class RouteDetail {
 
         arrivalTimes = new List<int>.from(arrivalTimesInput);
 
-        // latlng = LatLng(latlngInput['lat'], latlngInput['lng']);
       }
-
-
-
+      
       RouteDetail routeDetail =  RouteDetail(
         stop_name_en : json['stop_name_en'],
         stop_name_tc : json['stop_name_tc'],
@@ -75,11 +62,7 @@ class RouteDetail {
           "lat" : routeDetail.latlng.latitude,
           "lng" : routeDetail.latlng.longitude
         };
-        // latlng = JsonEncoder().convert(latlngMap);
-        // json.encode(latlngMap);
       }
-
-      //String latlng = routeDetail.latlng.toString()
 
       Map<String, dynamic> json = {
         "stop_name_en" : routeDetail.stop_name_en,
@@ -90,6 +73,5 @@ class RouteDetail {
       listJson.add(json);
     }
     return json.encode(listJson);
-
   }
 }

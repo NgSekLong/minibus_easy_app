@@ -23,7 +23,6 @@ class TestPage extends StatelessWidget {
             padding: const EdgeInsets.all(10.0),
             child: const Text('Reset to Passenger app'),
             color: Colors.green,
-            //elevation: 5.0,
             onPressed: () async {
               final SharedPreferences prefs = await SharedPreferences.getInstance();
               prefs.setString(CURRENT_USER_ROLE_PREF, CURRENT_USER_ROLE_PREF_PASSENGER);
@@ -33,7 +32,6 @@ class TestPage extends StatelessWidget {
             padding: const EdgeInsets.all(10.0),
             child: const Text('Simulate login to Driver'),
             color: Colors.blue,
-            //elevation: 5.0,
             onPressed: () async {
               Navigator.push(context, MaterialPageRoute(builder: (context) => DriverLoginPage()));
             },
@@ -42,7 +40,6 @@ class TestPage extends StatelessWidget {
             padding: const EdgeInsets.all(10.0),
             child: const Text('Check the user role'),
             color: Colors.greenAccent,
-            //elevation: 5.0,
             onPressed: () async {
               final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -56,7 +53,6 @@ class TestPage extends StatelessWidget {
             padding: const EdgeInsets.all(10.0),
             child: const Text('Remove gps points'),
             color: Colors.lightGreenAccent,
-            //elevation: 5.0,
             onPressed: () async {
               final SharedPreferences prefs = await SharedPreferences.getInstance();
 

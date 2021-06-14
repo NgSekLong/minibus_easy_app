@@ -27,14 +27,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-//  List _cities = [
-//    "English",
-//    "中文",
-//  ];
 
   List<DropdownMenuItem<Language>> _dropDownMenuItems;
-
-  //String _currentCity;
 
   Language selectedLanguage;
   List<Language> languages = <Language>[
@@ -45,7 +39,6 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
 
-    //allTranslations.text("lang");
     super.initState();
     int index = langTextToId(locale.currentLanguage);
 
@@ -83,11 +76,6 @@ class _SettingsPageState extends State<SettingsPage> {
     final TranslationsBloc translationsBloc =
         BlocProvider.of<TranslationsBloc>(context);
 
-//    String language;
-//
-//    translationsBloc.currentLanguage.listen(
-//            (String message) => language = message);
-
     //
     // Retrieves the title of the page, from the translations
     //
@@ -106,7 +94,6 @@ class _SettingsPageState extends State<SettingsPage> {
             children: <Widget>[
               ListTile(
                 title: Row(
-                  //crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     new Text(locale.text("pages.settings.body.language")),
@@ -121,7 +108,6 @@ class _SettingsPageState extends State<SettingsPage> {
                           selectedLanguage = language;
 
                           translationsBloc.setNewLanguage(language.id);
-                          //_currentCity = selectedLanguage;
                         });
                       },
                     ),
@@ -132,60 +118,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
         )
-
-//      new Center(
-//          child: new Column(
-//            crossAxisAlignment: CrossAxisAlignment.center,
-//            mainAxisAlignment: MainAxisAlignment.center,
-//            children: <Widget>[
-//              new Text("Please choose your city: "),
-//              new Container(
-//                padding: new EdgeInsets.all(16.0),
-//              ),
-//              new DropdownButton(
-//                value: _currentCity,
-//                items: _dropDownMenuItems,
-//                onChanged: changedDropDownItem,
-//              )
-//            ],
-//          )
-//      ),
-        );
+      );
   }
 
-  void changedDropDownItem(String selectedLanguage) {
-//    setState(() {
-//      translationsBloc.setNewLanguage("tc");
-//      //_currentCity = selectedLanguage;
-//    });
-  }
 }
-
-//class SettingsPage extends StatelessWidget {
-//
-//
-//  @override
-//  Widget build(BuildContext context) {
-//
-////    final List<Widget> divided = ListTile
-////        .divideTiles(
-////      context: context,
-////      tiles: listOfRow,
-////      color: Colors.blue,
-////    ).toList();
-//
-//    return Scaffold(
-//      appBar: AppBar(
-//        title: Text('Settings'),
-//      ),
-//      body: ListView(
-//        children: <Widget>[
-//          ListTile(
-//            title: Text('OK'),
-//          ),
-//        ],
-//      ),
-//    );
-//  }
-//
-//}

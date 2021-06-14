@@ -32,7 +32,6 @@ class MapSample extends StatefulWidget {
 class MapSampleState extends State<MapSample> {
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   Polyline polyline = Polyline(polylineId: PolylineId("placeholder"));
-  //Map<PolylineId, Polyline> polylines = <PolylineId, Polyline>{};
 
   Completer<GoogleMapController> _controller = Completer();
 
@@ -41,17 +40,8 @@ class MapSampleState extends State<MapSample> {
     zoom: 10,
   );
 
-//  static final CameraPosition _kLake = CameraPosition(
-//      bearing: 192.8334901395799,
-//      target: LatLng(37.43296265331129, -122.08832357078792),
-//      tilt: 59.440717697143555,
-//      zoom: 19.151926040649414);
-
-
   Future _initMarkers() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    // prefs.setString("SAVE_GPS_PREF", "[]");
 
     String savedGps = prefs.get(SAVE_GPS_PREF);
     if(savedGps == null){
@@ -70,7 +60,7 @@ class MapSampleState extends State<MapSample> {
     int time = int.parse(latlngtime.time);
 
 
-    var markerIdVal = 'Marker-$time'; //MyWayToGenerateId();
+    var markerIdVal = 'Marker-$time'; 
     final MarkerId markerId = MarkerId(markerIdVal);
 
     // creating a new MARKER
@@ -78,27 +68,15 @@ class MapSampleState extends State<MapSample> {
       markerId: markerId,
       position: LatLng(lat,lng),
       infoWindow: InfoWindow(title: markerIdVal, snippet: '*'),
-      onTap: () {
-        // _onMarkerTapped(markerId);
-      },
     );
-
-
-
+    
     var polylineIdVal = 'Polyline-$time';
     final PolylineId polylineId = PolylineId(polylineIdVal);
 
-    //markers[0].position
-    //markers.map((marker, v) => marker.value);
     List<LatLng> latlngs = [];
     markers.forEach((id, marker) => {
       latlngs.add(marker.position)
     });
-
-
-//    List<LatLng> latlngs = markers.map((v) => {
-//      return v.;
-//    });
 
     final Polyline newPolyline = Polyline(
       polylineId: polylineId,
@@ -106,9 +84,6 @@ class MapSampleState extends State<MapSample> {
       color: Colors.orange,
       width: 5,
       points: latlngs,
-      onTap: () {
-        //_onPolylineTapped(polylineId);
-      },
     );
     if (this.mounted){
 
@@ -119,10 +94,7 @@ class MapSampleState extends State<MapSample> {
       });
     }
   }
-
-
-
-
+  
   @override
   void initState() {
     super.initState();
@@ -148,16 +120,6 @@ class MapSampleState extends State<MapSample> {
         markers: Set<Marker>.of(markers.values),
         polylines: Set<Polyline>.of([polyline]),
       ),
-//      floatingActionButton: FloatingActionButton.extended(
-//        onPressed: _goToTheLake,
-//        label: Text('To the lake!'),
-//        icon: Icon(Icons.directions_boat),
-//      ),
     );
   }
-
-//  Future<void> _goToTheLake() async {
-//    final GoogleMapController controller = await _controller.future;
-//    controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
-//  }
 }

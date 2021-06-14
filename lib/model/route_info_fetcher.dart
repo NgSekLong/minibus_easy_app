@@ -8,8 +8,9 @@ import 'package:minibus_easy/model/globals.dart';
 import 'package:minibus_easy/model/route_detail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Fetching route info and detail from Backend server
 class RouteInfoFetcher {
-
+  
   ///
   /// To fetch buses, it goes through the following stages:
   /// 1. Check if need force update list (maybe after a period of time?)
@@ -58,9 +59,6 @@ class RouteInfoFetcher {
     }
   }
 
-  ////////////// Fetch Rote Detail ///////////////////////
-
-
   ///
   /// To fetch route details, it goes through the following stages:
   /// 1. Check if need force update list (maybe after a period of time?)
@@ -75,7 +73,6 @@ class RouteInfoFetcher {
       saveRouteDetailToSharedPreference(fetchRouteDetails, route_id,  route_num_counter);
     }
 
-    // TEMP: always fetch from network for now:
     fetchRouteDetails = await fetchRouteDetailFromServer( route_id,  route_num_counter);
 
     return fetchRouteDetails;
@@ -83,13 +80,10 @@ class RouteInfoFetcher {
 
   Future<List<RouteDetail>> fetchRouteDetailFromServer(String route_id, int route_num_counter) async {
     final response = await http.post('$BACKEND_SERVER_URL/passenger_request_arrival_real_time',
-        //await http.post('http://10.0.2.2:8000/passenger_request_arrival_real_time',
-        // body: {'route_id' : route_id, 'route_num_counter' : route_num_counter}
         body: {'route_id' : route_id, 'route_num_counter' : route_num_counter.toString()}
     );
     if (response.statusCode == 200) {
       // If the call to the server was successful, parse the JSON
-
       List<RouteDetail> listOfRouteDetail = RouteDetail.fromJson(json.decode(response.body));
       return listOfRouteDetail;
     } else {

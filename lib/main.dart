@@ -20,18 +20,3 @@ void main() async {
     Application(),
   );
 }
-
-//void main() => runApp(MyApp());
-
-//class MyApp extends StatelessWidget {
-//  @override
-//  Widget build(BuildContext context) {
-//    return MaterialApp(
-//      title: 'Fetch Data Example',
-//      theme: ThemeData(
-//        primarySwatch: Colors.blue,
-//      ),
-//      home: MainNavigation(),
-//    );
-//  }
-//}

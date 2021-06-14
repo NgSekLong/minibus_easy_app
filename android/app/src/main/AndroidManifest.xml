@@ -46,6 +46,7 @@
             android:exported="false" />
         <service android:name=".TrackingService" />
 
+        <!-- This is an testing Google MAP API_KEY-->
         <meta-data
             android:name="com.google.android.awareness.API_KEY"
             android:value="AIzaSyAccZVOeykKLDl7RWUfrKNuERm35UH767A"/>
